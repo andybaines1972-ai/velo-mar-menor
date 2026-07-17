@@ -1,0 +1,2363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#0F172A">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<meta name="description" content="Your cycling hub for Murcia & the Costa Cálida — hand-picked road & gravel routes, local cafés, bike hire, and your complete ride history.">
+<meta property="og:title" content="VÉLO Mar Menor — Cycling Murcia & the Costa Cálida">
+<meta property="og:description" content="25 real cycling routes with elevation profiles, 90+ cafés, bike shops & stays, live riding conditions — the cycling hub for the Mar Menor. Free, installable, works offline.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://andybaines1972-ai.github.io/velo-mar-menor/">
+<meta property="og:image" content="https://andybaines1972-ai.github.io/velo-mar-menor/assets/hero-marmenor.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="VÉLO Mar Menor — Cycling Murcia & the Costa Cálida">
+<meta name="twitter:description" content="25 real cycling routes, cafés, bike hire, live riding conditions — the cycling hub for the Mar Menor.">
+<meta name="twitter:image" content="https://andybaines1972-ai.github.io/velo-mar-menor/assets/hero-marmenor.jpg">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="VÉLO Mar Menor">
+<title>VÉLO Mar Menor — Cycling Murcia & the Costa Cálida</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/vendor/leaflet.css">
+<script src="assets/vendor/leaflet.js"></script>
+<script>
+window.__errs=[];
+window.addEventListener('error',e=>{window.__errs.push((e.message||'?')+' @'+(e.lineno||0));
+  document.documentElement.setAttribute('data-err', window.__errs.join(' || ').slice(0,500));});
+window.addEventListener('unhandledrejection',e=>{window.__errs.push('promise: '+(e.reason&&e.reason.message||e.reason));
+  document.documentElement.setAttribute('data-err', window.__errs.join(' || ').slice(0,500));});
+</script>
+<style>
+:root {
+  --white:#fff; --gray-50:#F9FAFB; --gray-100:#F3F4F6; --gray-200:#E5E7EB;
+  --gray-300:#D1D5DB; --gray-400:#9CA3AF; --gray-500:#6B7280; --gray-600:#4B5563;
+  --gray-700:#374151; --gray-800:#1F2937; --gray-900:#111827;
+  --accent:#F97316; --accent-hover:#EA580C; --accent-light:rgba(249,115,22,.08);
+  --accent-ring:rgba(249,115,22,.25);
+  --teal:#0D9488; --teal-light:rgba(13,148,136,.08);
+  --road:#3B82F6; --gravel:#D97706; --path:#059669;
+  --easy:#059669; --moderate:#D97706; --hard:#DC2626;
+  --shadow-xs:0 1px 2px rgba(0,0,0,.04);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow:0 4px 6px -1px rgba(0,0,0,.07),0 2px 4px -2px rgba(0,0,0,.04);
+  --shadow-md:0 10px 15px -3px rgba(0,0,0,.08),0 4px 6px -4px rgba(0,0,0,.04);
+  --shadow-lg:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.04);
+  --r:10px; --r-lg:14px; --r-xl:18px;
+  --header-h:56px; --sidebar-w:380px;
+  --ink:#0F172A; --ink-2:#1E293B;
+  --font-d:'Barlow Condensed','Inter',system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{height:100%;-webkit-text-size-adjust:100%}
+body{height:100%;font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  color:var(--gray-900);background:var(--white);-webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;overflow:hidden}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input{font:inherit;border:none;outline:none;background:none}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+img{display:block;max-width:100%}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--gray-400)}
+
+/* ===== LAYOUT ===== */
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+.app-body{flex:1;display:flex;position:relative;overflow:hidden}
+
+/* ===== HEADER ===== */
+.header{height:var(--header-h);display:flex;align-items:center;gap:16px;padding:0 20px;
+  background:var(--ink);border-bottom:1px solid rgba(255,255,255,.06);z-index:900;flex:none}
+.header-brand{display:flex;align-items:center;gap:10px;min-width:0}
+.header-logo{width:36px;height:36px;border-radius:10px;flex:none;
+  background:linear-gradient(135deg,#F97316,#EA580C);display:grid;place-items:center;
+  box-shadow:0 2px 8px rgba(249,115,22,.35)}
+.header-logo svg{width:20px;height:20px}
+.header-title{font-family:var(--font-d);font-size:20px;font-weight:700;letter-spacing:.06em;
+  white-space:nowrap;color:var(--white);text-transform:uppercase}
+.header-title span{font-weight:500;color:rgba(255,255,255,.55)}
+.header-sub{font-size:10.5px;color:rgba(255,255,255,.38);letter-spacing:.4px}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.65);font-size:13px;font-weight:500;white-space:nowrap}
+.lang-btn{margin-left:auto;flex:none;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700;
+  letter-spacing:.08em;color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.25);transition:all .15s}
+.lang-btn:hover{color:#fff;border-color:rgba(255,255,255,.6);background:rgba(255,255,255,.08)}
+.header-right~.lang-btn,.header-right+.lang-btn{margin-left:12px}
+.header-right svg{width:14px;height:14px;color:var(--accent)}
+/* ===== HEADER NAV ===== */
+.header-nav{display:flex;align-items:center;gap:2px;margin-left:32px}
+.nav-item{display:flex;align-items:center;gap:7px;padding:8px 16px;border-radius:var(--r);
+  font-size:13.5px;font-weight:500;color:rgba(255,255,255,.6);transition:all .15s;position:relative}
+.nav-item svg{width:18px;height:18px;flex:none}
+.nav-item:hover{color:var(--white);background:rgba(255,255,255,.07)}
+.nav-item.active{color:#FB923C;font-weight:600}
+.nav-item.active::after{content:'';position:absolute;bottom:-13px;left:12px;right:12px;height:2px;
+  background:var(--accent);border-radius:1px}
+/* ===== BOTTOM NAV (mobile) ===== */
+.bottom-nav{display:none}
+
+/* ===== CONTENT PANEL (replaces sidebar) ===== */
+.sidebar{position:absolute;inset:0;z-index:50;background:var(--gray-50);overflow-y:auto;
+  transition:opacity .3s,visibility .3s}
+.sidebar.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.panel-header{background:var(--white);border-bottom:1px solid var(--gray-200);
+  padding:14px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:10}
+.panel-search{display:flex;align-items:center;gap:8px;padding:8px 14px;
+  background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--r);
+  min-width:200px;max-width:320px;flex:none;transition:border-color .15s}
+.panel-search:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-ring)}
+.panel-search svg{width:16px;height:16px;color:var(--gray-400);flex:none}
+.panel-search input{flex:1;font-size:13px;color:var(--gray-900);min-width:0;border:none;outline:none;background:none}
+.panel-search input::placeholder{color:var(--gray-400)}
+.panel-divider{width:1px;height:24px;background:var(--gray-200);flex:none}
+.filter-chips{display:flex;flex-wrap:wrap;gap:5px}
+.filter-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:999px;
+  font-size:12.5px;font-weight:500;color:var(--gray-500);background:var(--white);
+  border:1px solid var(--gray-200);transition:all .15s}
+.filter-chip:hover{border-color:var(--gray-400)}
+.filter-chip.active{background:var(--gray-900);color:var(--white);border-color:var(--gray-900)}
+.filter-chip.active[data-type="road"]{background:var(--road);border-color:var(--road)}
+.filter-chip.active[data-type="gravel"]{background:var(--gravel);border-color:var(--gravel)}
+.filter-chip.active[data-type="path"]{background:var(--path);border-color:var(--path)}
+.chip-dot{width:8px;height:8px;border-radius:50%;flex:none}
+.panel-body{padding:20px 24px;max-width:1280px;margin:0 auto}
+.panel-count{font-size:13px;color:var(--gray-400);margin-bottom:14px;font-weight:500}
+
+/* ===== ROUTE CARD GRID ===== */
+.route-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.route-card{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--r-lg);
+  overflow:hidden;cursor:pointer;transition:all .2s}
+.route-card:hover{border-color:var(--gray-300);box-shadow:var(--shadow-md);transform:translateY(-3px)}
+.route-card.active{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-ring)}
+.rc-thumb{height:120px;background:var(--gray-100);position:relative;overflow:hidden}
+.rc-thumb svg{display:block}
+.rc-thumb .rc-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.rc-thumb .rc-photo-ov{position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.2))}
+.rc-thumb .rc-type-badge{position:absolute;top:8px;left:8px}
+.rc-thumb .rc-diff-badge{position:absolute;top:8px;right:8px}
+.rc-body{padding:12px 14px}
+.rc-body h3{font-size:14.5px;font-weight:600;line-height:1.3;margin-bottom:4px}
+.rc-badges{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+.rc-meta{display:flex;gap:14px;color:var(--gray-500);font-size:12.5px;margin-bottom:4px}
+.rc-meta b{color:var(--gray-800);font-weight:600}
+.rc-summary{color:var(--gray-500);font-size:12.5px;line-height:1.45;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* ===== PLACES ===== */
+.places-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.place-group-header{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;
+  color:var(--gray-400);padding:18px 0 10px;display:flex;align-items:center;gap:6px;
+  grid-column:1/-1}
+.place-card{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--r-lg);
+  padding:14px 16px;cursor:pointer;transition:all .18s;display:flex;gap:12px}
+.place-card:hover{border-color:var(--gray-300);box-shadow:var(--shadow);transform:translateY(-1px)}
+.place-icon{width:40px;height:40px;border-radius:var(--r);display:grid;place-items:center;flex:none;
+  font-size:16px;font-weight:700;color:var(--white)}
+.place-img{width:52px;height:52px;border-radius:var(--r);object-fit:cover;flex:none;border:1px solid var(--gray-200)}
+.place-card b{font-size:13.5px;font-weight:600;display:block;margin-bottom:2px}
+.place-card .place-desc{font-size:12px;color:var(--gray-500);line-height:1.4;display:-webkit-box;
+  -webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.place-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.place-tag{font-size:10px;color:var(--gray-500);background:var(--gray-100);border-radius:999px;padding:2px 8px}
+
+/* ===== MAP ===== */
+.map-area{flex:1;position:relative;min-width:0}
+#map{position:absolute;inset:0;background:var(--gray-100);z-index:1}
+.leaflet-popup-content-wrapper{background:var(--white);color:var(--gray-900);border-radius:var(--r-lg);
+  box-shadow:var(--shadow-md);border:none;padding:0}
+.leaflet-popup-tip{background:var(--white)}
+.leaflet-popup-content{margin:14px 16px;font-size:13px;line-height:1.55}
+.leaflet-popup-content b{color:var(--gray-900)}
+.leaflet-popup-content a{color:var(--teal)}
+.leaflet-popup-content .pop-tags{color:var(--gray-500);font-size:11px;margin-top:4px}
+.leaflet-container{font-family:inherit}
+.leaflet-control-attribution{font-size:10px!important;background:rgba(255,255,255,.7)!important;padding:2px 6px!important}
+.leaflet-control-zoom a{width:32px!important;height:32px!important;line-height:32px!important;font-size:16px!important;
+  border-radius:8px!important;background:var(--white)!important;color:var(--gray-700)!important;
+  border:1px solid var(--gray-200)!important;box-shadow:var(--shadow-sm)!important}
+.leaflet-control-zoom{border:none!important;box-shadow:none!important}
+.leaflet-control-zoom a+a{margin-top:4px!important}
+.poi-marker{border-radius:50%;border:2.5px solid var(--white);box-shadow:0 1px 4px rgba(0,0,0,.25);
+  display:grid;place-items:center;cursor:pointer;transition:transform .15s}
+.poi-marker:hover{transform:scale(1.2)}
+
+/* ===== MAP CONTROLS ===== */
+.map-controls{position:absolute;top:12px;right:12px;z-index:100;display:flex;flex-direction:column;gap:6px}
+.map-btn{width:40px;height:40px;border-radius:var(--r);background:var(--white);
+  border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);display:grid;place-items:center;
+  color:var(--gray-600);transition:all .15s}
+.map-btn:hover{background:var(--gray-50);color:var(--gray-900);box-shadow:var(--shadow)}
+.map-btn svg{width:18px;height:18px}
+.map-btn.accent{background:var(--accent);color:var(--white);border-color:var(--accent)}
+.map-btn.accent:hover{background:var(--accent-hover)}
+.map-styles{position:absolute;top:12px;right:60px;z-index:100;background:var(--white);
+  border:1px solid var(--gray-200);border-radius:var(--r);box-shadow:var(--shadow-md);
+  padding:4px;display:none;flex-direction:row;gap:2px}
+.map-styles.open{display:flex}
+.style-btn{padding:6px 12px;border-radius:7px;font-size:12px;font-weight:500;color:var(--gray-600);transition:all .15s}
+.style-btn:hover{background:var(--gray-100)}
+.style-btn.active{background:var(--accent);color:var(--white)}
+.map-legend{position:absolute;bottom:30px;left:12px;z-index:100;display:flex;flex-wrap:wrap;gap:5px;max-width:55%}
+.legend-pill{display:inline-flex;align-items:center;gap:6px;background:var(--white);
+  border:1px solid var(--gray-200);color:var(--gray-600);padding:5px 10px;border-radius:999px;
+  font-size:11.5px;font-weight:500;cursor:pointer;box-shadow:var(--shadow-xs);transition:all .15s}
+.legend-pill:hover{border-color:var(--gray-400);box-shadow:var(--shadow-sm)}
+.legend-pill.off{opacity:.45}
+.legend-pill .ldot{width:8px;height:8px;border-radius:50%;flex:none}
+.notification{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:200;
+  background:var(--gray-900);color:var(--white);border-radius:var(--r);padding:10px 16px;
+  font-size:13px;box-shadow:var(--shadow-lg);max-width:360px;text-align:center;
+  opacity:0;transition:opacity .3s;pointer-events:none}
+.notification.show{opacity:1;pointer-events:auto}
+.notification b{color:var(--accent)}
+
+/* ===== DETAIL DRAWER — side panel on desktop, bottom sheet on mobile ===== */
+.drawer{position:absolute;top:0;right:0;bottom:0;left:auto;width:min(440px,92%);z-index:300;
+  background:var(--white);border-left:1px solid var(--gray-200);
+  box-shadow:-14px 0 40px rgba(15,23,42,.14);overflow-y:auto;
+  transform:translateX(105%);transition:transform .35s cubic-bezier(.32,.72,.2,1)}
+.drawer.open{transform:translateX(0)}
+.drawer-handle{display:flex;align-items:center;padding:12px 20px 8px;cursor:pointer;position:sticky;top:0;
+  background:var(--white);z-index:2;gap:12px;min-height:44px}
+.handle-bar{display:none;width:36px;height:4px;border-radius:2px;background:var(--gray-300);margin:0 auto}
+.drawer-back{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--accent);
+  padding:6px 12px;border-radius:var(--r);transition:background .15s;position:absolute;left:12px}
+.drawer-back:hover{background:var(--accent-light)}
+.drawer-back svg{width:16px;height:16px}
+.drawer-hero{height:140px;border-radius:var(--r-lg);overflow:hidden;margin:0 20px 14px;
+  background:var(--gray-100);position:relative}
+.drawer-hero .dh-bg{position:absolute;inset:0;background-size:cover;background-position:center}
+.drawer-hero .dh-ov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.35))}
+.drawer-hero .dh-trace{position:absolute;inset:0;z-index:2}
+.drawer-hero .dh-tag{position:absolute;top:10px;left:12px;font-size:10px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.85);z-index:3}
+.drawer-content{padding:0 20px 20px}
+.drawer-title{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:4px}
+.drawer-sub{display:flex;align-items:center;gap:8px;color:var(--gray-500);font-size:13px;margin-bottom:16px;flex-wrap:wrap}
+.drawer-stats{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:18px;padding:14px 16px;
+  background:var(--gray-50);border-radius:var(--r-lg)}
+.drawer-stats .ds{text-align:center}
+.drawer-stats .ds-n{font-size:24px;font-weight:700;color:var(--accent);line-height:1.1}
+.drawer-stats .ds-k{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--gray-400);margin-top:2px;font-weight:500}
+.drawer-elev{margin-bottom:18px}
+.drawer-elev .de-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;
+  color:var(--gray-400);margin-bottom:6px}
+.drawer-elev .de-frame{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--r-lg);padding:8px 6px 2px}
+.drawer-desc{color:var(--gray-600);font-size:13.5px;line-height:1.65;margin-bottom:18px;max-width:720px}
+.drawer-stops .section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;
+  color:var(--gray-400);margin-bottom:10px}
+.stop-item{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;cursor:pointer;
+  padding:6px 8px;border-radius:var(--r);transition:background .1s}
+.stop-item:hover{background:var(--gray-50)}
+.stop-icon{width:28px;height:28px;border-radius:var(--r);display:grid;place-items:center;flex:none;
+  font-size:13px;font-weight:700;color:var(--white)}
+.stop-item b{font-size:13px;font-weight:600}
+.stop-item span{font-size:12px;color:var(--gray-500);line-height:1.4}
+.drawer-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;padding-top:14px;border-top:1px solid var(--gray-100)}
+
+/* ===== BUTTONS ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:10px 20px;border-radius:var(--r);font-size:14px;font-weight:600;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--accent);color:var(--white);box-shadow:0 2px 8px rgba(249,115,22,.3)}
+.btn-primary:hover{background:var(--accent-hover);box-shadow:0 4px 12px rgba(249,115,22,.35);transform:translateY(-1px)}
+.btn-secondary{background:var(--white);color:var(--gray-700);border:1px solid var(--gray-200);box-shadow:var(--shadow-xs)}
+.btn-secondary:hover{background:var(--gray-50);border-color:var(--gray-300);box-shadow:var(--shadow-sm)}
+.btn-sm{padding:7px 14px;font-size:13px;border-radius:8px}
+
+/* ===== BADGES ===== */
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;border-radius:6px}
+.b-road{background:rgba(59,130,246,.1);color:var(--road)}
+.b-gravel{background:rgba(217,119,6,.1);color:var(--gravel)}
+.b-path{background:rgba(5,150,105,.1);color:var(--path)}
+.b-easy{background:rgba(5,150,105,.08);color:var(--easy)}
+.b-moderate{background:rgba(217,119,6,.08);color:var(--moderate)}
+.b-hard{background:rgba(220,38,38,.08);color:var(--hard)}
+.b-yours{background:var(--accent-light);color:var(--accent)}
+.b-repeat{background:var(--teal-light);color:var(--teal)}
+
+/* ===== LANDING PAGE ===== */
+.landing{position:absolute;inset:0;z-index:500;background:var(--white);overflow-y:auto;
+  transition:opacity .4s ease,visibility .4s}
+.landing.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.hero{position:relative;height:min(520px,70vh);overflow:hidden;display:flex;align-items:flex-end}
+.hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,rgba(0,0,0,.55) 70%,rgba(0,0,0,.75) 100%)}
+.hero-content{position:relative;padding:0 40px 40px;max-width:700px;color:var(--white)}
+.hero-eyebrow{font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;
+  color:#F59E0B;margin-bottom:10px}
+.hero-title{font-size:42px;font-weight:800;line-height:1.08;letter-spacing:-.03em;margin-bottom:12px}
+.hero-desc{font-size:15px;line-height:1.6;color:rgba(255,255,255,.85);margin-bottom:22px;max-width:520px}
+.hero-cta{display:flex;gap:10px;flex-wrap:wrap}
+.btn-hero{background:var(--accent);color:var(--white);padding:12px 28px;border-radius:var(--r);
+  font-size:15px;font-weight:600;box-shadow:0 4px 14px rgba(249,115,22,.4);transition:all .2s}
+.btn-hero:hover{background:var(--accent-hover);transform:translateY(-2px);box-shadow:0 6px 20px rgba(249,115,22,.45)}
+.btn-hero-outline{background:rgba(255,255,255,.12);color:var(--white);padding:12px 28px;border-radius:var(--r);
+  font-size:15px;font-weight:600;border:1px solid rgba(255,255,255,.3);backdrop-filter:blur(4px);transition:all .2s}
+.btn-hero-outline:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.5)}
+.hero-scroll{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.5);
+  animation:bobble 2s ease-in-out infinite}
+@keyframes bobble{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(6px)}}
+.hero-scroll{animation-iteration-count:3}
+.landing-body{max-width:960px;margin:0 auto;padding:32px 32px 0}
+.landing-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:36px}
+.l-stat{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--r-lg);padding:18px 20px;text-align:center}
+.l-stat .n{font-size:28px;font-weight:800;color:var(--accent);line-height:1;letter-spacing:-.02em}
+.l-stat .k{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--gray-400);margin-top:6px}
+.landing-section{margin-bottom:36px}
+.landing-section h2{font-size:20px;font-weight:700;letter-spacing:-.01em;margin-bottom:16px}
+.section-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px}
+.section-header h2{margin-bottom:0}
+.link-btn{font-size:13px;font-weight:600;color:var(--accent);cursor:pointer;transition:color .15s}
+.link-btn:hover{color:var(--accent-hover)}
+.featured-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.feat-card{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--r-lg);
+  overflow:hidden;cursor:pointer;transition:all .2s}
+.feat-card:hover{border-color:var(--gray-300);box-shadow:var(--shadow-md);transform:translateY(-3px)}
+.feat-card .fc-img{height:130px;position:relative;background:var(--gray-100);overflow:hidden}
+.feat-card .fc-img img{width:100%;height:100%;object-fit:cover}
+.feat-card .fc-img .badge{position:absolute;top:8px;left:8px}
+.feat-card .fc-img .diff-badge{position:absolute;top:8px;right:8px}
+.feat-card .fc-body{padding:12px 14px}
+.feat-card h4{font-size:14px;font-weight:600;margin-bottom:4px;line-height:1.3}
+.feat-card .fc-meta{font-size:12px;color:var(--gray-500);display:flex;gap:10px}
+.feat-card .fc-meta b{font-weight:600;color:var(--gray-700)}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.info-card{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--r-lg);padding:16px 18px}
+.info-card h5{font-size:14px;font-weight:600;margin-bottom:5px;display:flex;align-items:center;gap:8px}
+.info-card h5 .info-icon{width:24px;height:24px;border-radius:6px;background:var(--accent-light);color:var(--accent);
+  display:grid;place-items:center;flex:none;font-size:12px;font-weight:700}
+.info-card p{font-size:12.5px;color:var(--gray-500);line-height:1.55}
+.info-card a{color:var(--teal);font-weight:500}
+.cta-section{text-align:center;padding:32px 0 12px;border-top:1px solid var(--gray-200)}
+.cta-section h2{font-size:24px;font-weight:700}
+.cta-section p{color:var(--gray-500);margin-bottom:20px}
+.cta-buttons{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.highlights{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.hl{display:flex;gap:14px;align-items:flex-start;background:var(--white);border:1px solid var(--gray-200);
+  border-radius:var(--r-lg);padding:16px 18px}
+.hl-icon{flex:none;padding:8px 12px;border-radius:var(--r);font-size:14px;font-weight:800;white-space:nowrap}
+.hl b{font-size:14px;display:block;margin-bottom:2px}
+.hl p{font-size:12.5px;color:var(--gray-500);line-height:1.45;margin:0}
+.landing-footer{padding:28px 0;margin-top:20px;border-top:1px solid var(--gray-200);
+  display:flex;align-items:center;justify-content:space-between;color:var(--gray-400);font-size:12px}
+.landing-footer .ff-brand{font-weight:700;color:var(--gray-600);font-size:13px}
+
+/* ===== PRO TYPE & POLISH ===== */
+.hero-title,.drawer-title,.view-title h2,.landing-section h2,.section-header h2,.cta-section h2{
+  font-family:var(--font-d);text-transform:uppercase;letter-spacing:.025em;font-weight:700}
+.hero-title{font-size:54px;line-height:1.02}
+.drawer-title{font-size:28px}
+.view-title h2{font-size:28px}
+.landing-section h2,.section-header h2{font-size:23px}
+.l-stat .n,.drawer-stats .ds-n,.dash .l-stat .n,.wx-temp{font-family:var(--font-d);font-weight:700}
+.l-stat .n{font-size:34px}
+.drawer-stats .ds-n{font-size:28px;letter-spacing:.02em}
+.rc-thumb .rc-photo{transition:transform .45s cubic-bezier(.2,.6,.2,1)}
+.route-card:hover .rc-photo,.feat-card:hover .fc-img img{transform:scale(1.06)}
+.feat-card .fc-img img{transition:transform .45s cubic-bezier(.2,.6,.2,1)}
+.rc-spark{margin-top:8px;padding-top:7px;border-top:1px solid var(--gray-100)}
+.rc-spark svg{display:block;width:100%;height:34px}
+.hero-eyebrow{font-family:var(--font-d);font-size:14px;letter-spacing:.35em;font-weight:600}
+
+/* ===== VIEW TITLE ===== */
+.view-title{margin:2px 0 16px}
+.view-title h2{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.view-title p{font-size:13px;color:var(--gray-500);margin-top:3px;max-width:680px;line-height:1.5}
+
+/* ===== COMMUNITY ===== */
+.comm-ico{width:42px;height:42px;border-radius:var(--r);display:grid;place-items:center;
+  font-size:19px;flex:none;background:var(--gray-100);border:1px solid var(--gray-200)}
+.comm-meta{display:inline-block;font-size:10px;font-weight:700;color:var(--teal);
+  text-transform:uppercase;letter-spacing:.5px;margin-top:6px;background:var(--teal-light);
+  border-radius:5px;padding:2px 8px}
+.comm-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.comm-card-sm{display:flex;gap:12px;align-items:center;background:var(--white);border:1px solid var(--gray-200);
+  border-radius:var(--r-lg);padding:14px 16px;cursor:pointer;transition:all .18s;text-decoration:none;color:inherit}
+.comm-card-sm:hover{border-color:var(--gray-300);box-shadow:var(--shadow);transform:translateY(-2px);text-decoration:none}
+.comm-card-sm b{font-size:13px;display:block;line-height:1.3}
+.comm-card-sm span{font-size:11.5px;color:var(--gray-500);line-height:1.35;display:block;margin-top:2px}
+
+/* ===== WEATHER ===== */
+.wx-cur{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:center;
+  background:linear-gradient(135deg,#0EA5E9 0%,#0369A1 100%);border-radius:var(--r-lg);
+  padding:20px 24px;color:#fff;margin-bottom:12px}
+.wx-temp{font-size:42px;font-weight:800;letter-spacing:-.03em;line-height:1;display:flex;align-items:center;gap:12px}
+.wx-temp .wx-ico{font-size:36px;line-height:1}
+.wx-desc{font-size:13px;color:rgba(255,255,255,.85);margin-top:7px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.wx-desc .ride{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+  border-radius:5px;padding:2px 8px;background:rgba(255,255,255,.18);color:#fff}
+.wx-facts{display:flex;gap:24px;flex-wrap:wrap}
+.wx-fact{text-align:center;min-width:60px}
+.wx-fact .n{font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:5px}
+.wx-fact .k{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.7);margin-top:3px}
+.wx-arrow{display:inline-block;flex:none}
+.wx-days{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(76px,1fr);gap:8px;overflow-x:auto;padding-bottom:4px}
+.wx-day{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--r);padding:10px 6px;text-align:center}
+.wx-day .d{font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px}
+.wx-day .i{font-size:20px;margin:6px 0 4px}
+.wx-day .t{font-size:13px;font-weight:700}
+.wx-day .t span{color:var(--gray-400);font-weight:500}
+.wx-day .w{font-size:10.5px;color:var(--gray-500);margin-top:3px;display:flex;align-items:center;justify-content:center;gap:3px}
+.wx-day .ride{margin-top:7px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;border-radius:5px;padding:2px 0}
+.ride-great{background:rgba(5,150,105,.12);color:var(--easy)}
+.ride-good{background:rgba(13,148,136,.12);color:var(--teal)}
+.ride-fair{background:rgba(217,119,6,.12);color:var(--moderate)}
+.ride-tough{background:rgba(220,38,38,.1);color:var(--hard)}
+.wx-pill{position:absolute;top:12px;left:12px;z-index:40;display:none;align-items:center;gap:8px;
+  background:var(--white);border:1px solid var(--gray-200);border-radius:999px;padding:6px 14px;
+  box-shadow:var(--shadow-sm);font-size:12.5px;font-weight:600;color:var(--gray-700)}
+.wx-pill.show{display:flex}
+.wx-pill .sep{width:1px;height:14px;background:var(--gray-200)}
+
+/* ===== INTERACTIVE ELEVATION ===== */
+.de-frame{position:relative;cursor:crosshair}
+.de-hover{position:absolute;top:6px;bottom:6px;width:1.5px;background:var(--gray-500);opacity:0;pointer-events:none}
+.de-tip{position:absolute;top:4px;transform:translateX(-50%);background:var(--gray-900);color:#fff;
+  font-size:11px;line-height:1.5;padding:5px 10px;border-radius:8px;white-space:nowrap;opacity:0;
+  pointer-events:none;box-shadow:var(--shadow-md);z-index:5}
+.de-tip b{color:#FDBA74}
+
+/* ===== MY RIDES DASHBOARD ===== */
+.dash{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.dash .l-stat{padding:14px 10px}
+.dash-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+
+/* ===== FAVOURITES ===== */
+.fav-btn{position:absolute;bottom:8px;right:8px;width:30px;height:30px;border-radius:50%;
+  background:rgba(255,255,255,.94);display:grid;place-items:center;box-shadow:var(--shadow-sm);
+  color:var(--gray-400);transition:transform .15s,color .15s;z-index:3}
+.fav-btn:hover{transform:scale(1.15);color:var(--accent)}
+.fav-btn.on{color:#F59E0B}
+.fav-btn svg{width:15px;height:15px}
+
+/* ===== FLY-THROUGH HUD ===== */
+.fly-hud{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:250;
+  background:var(--gray-900);color:#fff;border-radius:999px;padding:9px 18px;font-size:13px;
+  font-weight:600;display:none;align-items:center;gap:14px;box-shadow:var(--shadow-lg);max-width:90%;white-space:nowrap}
+.fly-hud.show{display:flex}
+.fly-hud .stop{color:#FCA5A5;font-weight:700;cursor:pointer;flex:none}
+.fly-hud .stop:hover{color:#F87171}
+
+/* ===== MOBILE ===== */
+@media(max-width:900px){
+  .header{height:48px;padding:0 14px}
+  .header-title{font-size:15px}
+  .header-sub,.header-nav,.header-right{display:none}
+  .app{padding-bottom:58px}
+  .bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;height:58px;background:var(--white);
+    border-top:1px solid var(--gray-200);z-index:950;justify-content:space-around;align-items:stretch;
+    padding:0 4px;box-shadow:0 -2px 10px rgba(0,0,0,.06)}
+  .bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    color:var(--gray-400);font-size:10px;font-weight:500;letter-spacing:.2px;transition:color .15s;
+    -webkit-tap-highlight-color:transparent;position:relative}
+  .bnav-item svg{width:22px;height:22px;flex:none}
+  .bnav-item.active{color:var(--accent)}
+  .bnav-item.active::before{content:'';position:absolute;top:0;left:25%;right:25%;height:2px;
+    background:var(--accent);border-radius:0 0 2px 2px}
+  .app-body{flex-direction:column}
+  .sidebar{position:fixed;top:48px;bottom:58px;left:0;right:0;z-index:600;border-radius:0}
+  .panel-header{flex-wrap:wrap;padding:10px 14px;gap:8px}
+  .panel-search{min-width:0;max-width:none;flex:1 1 100%}
+  .panel-divider{display:none}
+  .panel-body{padding:12px 14px}
+  .route-grid{grid-template-columns:1fr}
+  .places-grid{grid-template-columns:1fr}
+  .map-area{flex:1}
+  .landing{bottom:0}
+  .hero{height:min(400px,55vh)}
+  .hero-content{padding:0 20px 30px}
+  .hero-title{font-size:28px}
+  .hero-desc{font-size:13.5px}
+  .landing-body{padding:20px 16px 0}
+  .landing-stats{grid-template-columns:1fr 1fr}
+  .featured-grid{grid-template-columns:1fr 1fr}
+  .highlights{grid-template-columns:1fr}
+  .info-grid{grid-template-columns:1fr}
+  .drawer{top:auto;left:0;right:0;bottom:0;width:auto;max-height:55vh;
+    border-radius:var(--r-xl) var(--r-xl) 0 0;border-left:none;border-top:1px solid var(--gray-200);
+    box-shadow:0 -8px 30px rgba(0,0,0,.1);transform:translateY(105%)}
+  .drawer.open{transform:translateY(0)}
+  .handle-bar{display:block}
+  .map-legend{bottom:120px}
+  .notification{bottom:70px}
+  .dash{grid-template-columns:1fr 1fr}
+  .comm-strip{grid-template-columns:1fr 1fr}
+  .view-title h2{font-size:19px}
+  .wx-cur{padding:16px 18px}
+  .wx-temp{font-size:34px}
+  .wx-facts{gap:16px}
+  .fly-hud{top:8px;font-size:12px;padding:8px 14px}
+}
+@media(max-width:480px){
+  .hero-title{font-size:24px}
+  .featured-grid{grid-template-columns:1fr}
+  .feat-card .fc-img{height:110px}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="header">
+    <div class="header-brand">
+      <div class="header-logo">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 18L10.5 4h3L7 18H4z" fill="white"/><path d="M13.5 4L20 18h-3L10.5 4h3z" fill="white" opacity=".7"/>
+          <line x1="3" y1="13" x2="21" y2="13" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="header-title">VELO <span>Mar Menor</span></div>
+        <div class="header-sub">Cycling Murcia & the Costa Calida</div>
+      </div>
+    </div>
+    <nav class="header-nav" id="headerNav">
+      <button class="nav-item active" data-nav="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+        Home
+      </button>
+      <button class="nav-item" data-nav="routes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l4-4 4 4 4-4 4 4"/><path d="M3 7l4-4 4 4 4-4 4 4"/></svg>
+        Routes
+      </button>
+      <button class="nav-item" data-nav="rides">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        My Rides
+      </button>
+      <button class="nav-item" data-nav="places">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+        Places
+      </button>
+      <button class="nav-item" data-nav="community">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        Community
+      </button>
+    </nav>
+    <div class="header-right">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+      Santiago de la Ribera
+    </div>
+    <button class="lang-btn" id="langBtn" title="Cambiar idioma / Switch language">ES</button>
+  </header>
+
+  <div class="app-body">
+    <aside class="sidebar" id="sidebar">
+      <div class="panel-header" id="filterBar">
+        <div class="panel-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input type="text" placeholder="Search routes & places..." id="searchInput">
+        </div>
+        <div class="panel-divider"></div>
+        <div class="filter-chips" id="typeChips">
+          <button class="filter-chip active" data-type="road"><span class="chip-dot" style="background:var(--road)"></span>Road</button>
+          <button class="filter-chip active" data-type="gravel"><span class="chip-dot" style="background:var(--gravel)"></span>Gravel</button>
+          <button class="filter-chip active" data-type="path"><span class="chip-dot" style="background:var(--path)"></span>Path</button>
+        </div>
+        <div class="panel-divider"></div>
+        <div class="filter-chips" id="timeChips">
+          <button class="filter-chip active" data-time="all">All</button>
+          <button class="filter-chip" data-time="1">~1 hr</button>
+          <button class="filter-chip" data-time="2">~2 hr</button>
+          <button class="filter-chip" data-time="day">Day trip</button>
+        </div>
+        <div class="panel-divider"></div>
+        <div class="filter-chips" id="sortChips">
+          <button class="filter-chip active" data-sort="featured">Featured</button>
+          <button class="filter-chip" data-sort="dist">Longest</button>
+          <button class="filter-chip" data-sort="climb">Hilliest</button>
+        </div>
+        <div class="filter-chips">
+          <button class="filter-chip" id="favChip">&#9733; Saved</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="view-title" id="viewTitle"></div>
+        <div class="panel-count" id="resultCount"></div>
+        <div id="routeList"></div>
+      </div>
+    </aside>
+
+    <main class="map-area">
+      <div id="map"></div>
+
+      <div class="map-controls">
+        <button class="map-btn accent" id="uploadBtn" title="Add a ride">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <button class="map-btn" id="mapStyleBtn" title="Map style">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </button>
+        <button class="map-btn" id="heatMapBtn" title="Show all your rides">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22c4.4 0 8-3.6 8-8 0-5-4-8-5.5-11C13 6 9 6.5 9 10c-1.5-1-2-2.5-2-4-2 2-3 5-3 8 0 4.4 3.6 8 8 8z"/></svg>
+        </button>
+        <button class="map-btn" id="resetBtn" title="Reset view">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        </button>
+        <input type="file" id="gpxInput" accept=".gpx,.fit,.gz" style="display:none">
+      </div>
+
+      <div class="map-styles" id="mapStyles">
+        <button class="style-btn active" data-style="default">Clean</button>
+        <button class="style-btn" data-style="cycling">Cycling</button>
+        <button class="style-btn" data-style="terrain">Terrain</button>
+        <button class="style-btn" data-style="satellite">Satellite</button>
+      </div>
+
+      <div class="map-legend" id="legend"></div>
+
+      <div class="wx-pill" id="wxPill"></div>
+
+      <div class="fly-hud" id="flyHud"><span id="flyStat"></span><span class="stop" id="flyStop">&#9632; Stop</span></div>
+
+      <div class="notification" id="notify"></div>
+
+      <div class="drawer" id="drawer">
+        <div class="drawer-handle" id="drawerClose">
+          <button class="drawer-back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back
+          </button>
+          <div class="handle-bar"></div>
+        </div>
+        <div class="drawer-hero" id="dHero"></div>
+        <div class="drawer-content">
+          <h2 class="drawer-title" id="dTitle"></h2>
+          <div class="drawer-sub" id="dSub"></div>
+          <div class="drawer-stats" id="dStats"></div>
+          <div class="drawer-elev" id="dElev"></div>
+          <div class="drawer-desc" id="dDesc"></div>
+          <div class="drawer-stops"><div class="section-label">Stops & highlights along the way</div><div id="dStops"></div></div>
+          <div class="drawer-actions">
+            <button class="btn btn-primary btn-sm" id="dGpx">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+              Download GPX
+            </button>
+            <button class="btn btn-secondary btn-sm" id="dFly">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8 5v14l11-7z"/></svg>
+              Fly the route
+            </button>
+            <button class="btn btn-secondary btn-sm" id="dNav">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+              Directions to start
+            </button>
+            <button class="btn btn-secondary btn-sm" id="dFav">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" width="16" height="16"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>
+              <span id="dFavTxt">Save</span>
+            </button>
+            <button class="btn btn-secondary btn-sm" id="dKomoot">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+              View source route
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div class="landing" id="landing">
+      <div class="hero">
+        <img src="assets/hero-marmenor.jpg" alt="Sunrise over the Mar Menor" class="hero-img">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+          <div class="hero-eyebrow">Costa Calida &middot; Region de Murcia</div>
+          <h1 class="hero-title">Discover cycling around the Mar Menor</h1>
+          <p class="hero-desc">Hand-picked road & gravel routes, local cafes, bike hire and your complete ride history &mdash; all in one place.</p>
+          <div class="hero-cta">
+            <button class="btn-hero" id="wExplore">Explore routes</button>
+            <button class="btn-hero-outline" id="wMap">Open the map</button>
+          </div>
+        </div>
+        <div class="hero-scroll">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="24" height="24"><path d="M7 10l5 5 5-5"/></svg>
+        </div>
+      </div>
+
+      <div class="landing-body">
+        <div class="landing-stats" id="lStats"></div>
+
+        <div class="landing-section">
+          <div class="highlights">
+            <div class="hl"><span class="hl-icon" style="background:rgba(249,115,22,.1);color:var(--accent)">300+</span><div><b>Days of sunshine</b><p>One of Europe's sunniest coasts — rideable year-round</p></div></div>
+            <div class="hl"><span class="hl-icon" style="background:rgba(59,130,246,.1);color:var(--road)">0–1,900m</span><div><b>Flat to alpine</b><p>Sea-level lagoon paths to serious Sierra climbs — all within 30 km</p></div></div>
+            <div class="hl"><span class="hl-icon" style="background:rgba(5,150,105,.1);color:var(--path)">73 km</span><div><b>Traffic-free greenways</b><p>Via Verde del Campo de Cartagena + coastal promenades</p></div></div>
+          </div>
+        </div>
+
+        <div class="landing-section" id="wxSection" style="display:none">
+          <div class="section-header">
+            <h2>Riding conditions</h2>
+            <span style="font-size:12px;color:var(--gray-400)" id="wxUpdated"></span>
+          </div>
+          <div class="wx-cur" id="wxCur"></div>
+          <div class="wx-days" id="wxDays"></div>
+        </div>
+
+        <div class="landing-section">
+          <div class="section-header">
+            <h2 id="featH2">Featured routes</h2>
+            <button class="link-btn" id="wAllRoutes">View all &rarr;</button>
+          </div>
+          <div class="featured-grid" id="lFeat"></div>
+        </div>
+
+        <div class="landing-section">
+          <div class="section-header">
+            <h2 id="commH2">Community &amp; events</h2>
+            <button class="link-btn" id="wCommunity">All clubs, events &amp; tools &rarr;</button>
+          </div>
+          <div class="comm-strip">
+            <a class="comm-card-sm" href="https://lovelo.shop/" target="_blank" rel="noopener">
+              <div class="comm-ico">&#9749;</div>
+              <div><b>Lovelo Coffee Ride</b><span>The cyclist caf&eacute; &mdash; now with its own shop &amp; community site</span></div>
+            </a>
+            <a class="comm-card-sm" href="https://www.mmgr.info/mar-menor-cycling-club/" target="_blank" rel="noopener">
+              <div class="comm-ico">&#128692;</div>
+              <div><b>Mar Menor Cycling Club</b><span>Friendly social club rides around the lagoon &mdash; coffee stop guaranteed</span></div>
+            </a>
+            <a class="comm-card-sm" href="https://irongravel.com/en/" target="_blank" rel="noopener">
+              <div class="comm-ico">&#129704;</div>
+              <div><b>Iron Gravel</b><span>Ultra-distance gravel challenge across the Murcia interior</span></div>
+            </a>
+            <a class="comm-card-sm" href="https://www.vueltamurcia.es/en" target="_blank" rel="noopener">
+              <div class="comm-ico">&#127937;</div>
+              <div><b>Vuelta a Murcia</b><span>The pros race your roads every February</span></div>
+            </a>
+          </div>
+        </div>
+
+        <div class="landing-section">
+          <h2 id="planH2">Plan your trip</h2>
+          <div class="info-grid">
+            <div class="info-card"><h5><span class="info-icon">A</span>Getting here</h5><p>Fly to <b>Murcia&ndash;Corvera (RMU)</b> ~40 min away, or <b>Alicante (ALC)</b> ~50 min. San Javier / MJV is military-only.</p></div>
+            <div class="info-card"><h5><span class="info-icon">B</span>Bikes to your door</h5><p>Carbon road & e-bikes delivered &mdash; <a href="https://murciabikehire.com/" target="_blank" rel="noopener">Murcia Bike Hire</a>, CCT, Cycle Classic Tours.</p></div>
+            <div class="info-card"><h5><span class="info-icon">C</span>Best time to ride</h5><p>Mar&ndash;Jun & Sep&ndash;Nov are ideal. Summer is hot & dry &mdash; start early and carry water.</p></div>
+            <div class="info-card"><h5><span class="info-icon">D</span>The terrain</h5><p>Flat coast & Campo de Cartagena for easy miles; real climbs inland and behind Cartagena / La Union.</p></div>
+            <div class="info-card"><h5><span class="info-icon">E</span>Where to base</h5><p>Santiago de la Ribera or Los Alcazares &mdash; seafront, flat, and right on the Mar Menor cycle network.</p></div>
+            <div class="info-card"><h5><span class="info-icon">F</span>Getting around</h5><p>The lagoon coast is bike-pathed; train & bus link to Cartagena and Murcia. Quietest roads inland midweek.</p></div>
+          </div>
+        </div>
+
+        <div class="landing-section cta-section">
+          <h2>Ready to ride?</h2>
+          <p>Choose your adventure</p>
+          <div class="cta-buttons">
+            <button class="btn btn-primary" id="wLib">Browse all routes</button>
+            <button class="btn btn-secondary" id="wPlaces">Cafes & places</button>
+            <button class="btn btn-secondary" id="wMap2">Explore the map</button>
+          </div>
+        </div>
+
+        <footer class="landing-footer">
+          <span class="ff-brand">VELO Mar Menor</span>
+          <span>
+            <a href="https://www.komoot.com/guide/1532641/cycling-around-los-alcazares" target="_blank" rel="noopener">Komoot</a> &middot;
+            <a href="https://www.strava.com" target="_blank" rel="noopener">Strava</a> &middot;
+            <a href="https://veloviewer.com" target="_blank" rel="noopener">VeloViewer</a> &middot;
+            <a href="https://www.wikiloc.com/trails/outdoor/spain/murcia" target="_blank" rel="noopener">Wikiloc</a>
+            &nbsp;&mdash;&nbsp; Photos: CC-licensed via Flickr. Built with Leaflet + OpenStreetMap.
+          </span>
+        </footer>
+      </div>
+    </div>
+  </div>
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="bnav-item active" data-nav="home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+      <span>Home</span>
+    </button>
+    <button class="bnav-item" data-nav="routes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l4-4 4 4 4-4 4 4"/><path d="M3 7l4-4 4 4 4-4 4 4"/></svg>
+      <span>Routes</span>
+    </button>
+    <button class="bnav-item" data-nav="rides">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span>My Rides</span>
+    </button>
+    <button class="bnav-item" data-nav="places">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+      <span>Places</span>
+    </button>
+    <button class="bnav-item" data-nav="community">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      <span>Club</span>
+    </button>
+    <button class="bnav-item" data-nav="map">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+      <span>Map</span>
+    </button>
+  </nav>
+</div>
+
+<script>
+/* =========================================================================
+   DATA
+   ========================================================================= */
+const BASE = [37.7985, -0.8085];
+
+const POI_CATS = {
+  coffee:  {label:'Coffee stops',     color:'#F97316', letter:'C',
+    svg:'<path d="M18 8h1a3 3 0 010 6h-1M3 8h15v4a5 5 0 01-5 5H8a5 5 0 01-5-5V8z"/><path d="M7 3v2M11 3v2M15 3v2"/>'},
+  food:    {label:'Food & drink',     color:'#EAB308', letter:'F',
+    svg:'<path d="M6 2v6a2 2 0 002 2 2 2 0 002-2V2M8 10v12M17 2c-1.6 1.2-2.5 3.4-2.5 6v4H17M17 2v20"/>'},
+  hire:    {label:'Bike hire & shops', color:'#0D9488', letter:'B',
+    svg:'<path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>'},
+  stay:    {label:'Accommodation',    color:'#8B5CF6', letter:'H',
+    svg:'<path d="M2 5v15M2 9h18a2 2 0 012 2v9M2 16h20M6 9v7"/><circle cx="7" cy="6" r="1.5"/>'},
+  view:    {label:'Landmarks',        color:'#3B82F6', letter:'V',
+    svg:'<path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>'},
+};
+const catSvg=(cat,size)=>`<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${POI_CATS[cat].svg}</svg>`;
+
+const POIS = [
+  {id:'lovelo', cat:'coffee', name:'Lovelo Coffee Ride', lat:37.9351, lng:-0.7543,
+   desc:'Cyclist cafe + bike shop at Centro Comercial Rioja (Orihuela Costa, by Villamartin/La Zenia). Recovery drinks, cakes, bike racks, wash & tools — plus their own Lovelo apparel brand and community rides.',
+   url:'https://lovelo.shop/'},
+  {id:'paseo', cat:'coffee', name:'Chiringuitos — Santiago paseo', lat:37.7997, lng:-0.8050,
+   desc:'Beachfront cafes along one of the prettiest promenades on the Mar Menor — the classic pre/post-ride stop.', url:''},
+  {id:'lopagan', cat:'food', name:'Lo Pagan seafront', lat:37.8200, lng:-0.7805,
+   desc:'Tapas, ice cream and mud-bath beaches at the north tip of the Mar Menor. Great turnaround for a flat coastal spin.', url:''},
+  {id:'cabo-food', cat:'food', name:'Cabo de Palos marina', lat:37.6320, lng:-0.7140,
+   desc:'Fresh seafood (the famous caldero rice) at the harbour — the reward at the bottom of the coastal ride.', url:''},
+  {id:'cct', cat:'hire', name:'CCT Bike Rental (San Javier)', lat:37.8060, lng:-0.8370,
+   desc:'Top-class carbon road bikes, delivery to San Javier / San Pedro del Pinatar and along the coast.', url:'https://www.cctbikerental.com/rentals/san-javier-bike-rentals/'},
+  {id:'ubbe', cat:'hire', name:'Ubbe & Odette Rentals', lat:37.8040, lng:-0.8290,
+   desc:'Small family rental near San Javier — road bikes and e-bikes close to Santiago de la Ribera.', url:'https://ubbeodette.com/bike-rental-san-javier'},
+  {id:'baybike', cat:'hire', name:'Bay Bike Hire (Lo Pagan)', lat:37.8185, lng:-0.7880,
+   desc:'Well-reviewed hire in Lo Pagan / San Pedro del Pinatar — handy for the salt-flats and northern routes.', url:'https://www.tripadvisor.com/Attraction_Review-g644340-d6674376-Reviews-Bay_Bike_Hire-Lo_Pagan.html'},
+  {id:'stay-rib', cat:'stay', name:'Santiago de la Ribera hotels', lat:37.7975, lng:-0.8095,
+   desc:'Cluster of seafront hotels & apartments around the marina — flat, secure, walkable, and right on the cycle network.', url:''},
+  {id:'stay-lamanga', cat:'stay', name:'La Manga Club Resort', lat:37.6280, lng:-0.8230,
+   desc:'Cycling-friendly resort south of the Mar Menor — pro-team training base with road bike hire on site.', url:'https://murciabikehire.com/bike-hire-la-manga-club-resort/'},
+  {id:'salinas', cat:'view', name:'Salinas de San Pedro (salt flats)', lat:37.8360, lng:-0.7530,
+   desc:'Regional park: flamingos, salt pans and a flat traffic-free track. A short, photogenic out-and-back.', url:''},
+  {id:'cabo', cat:'view', name:'Faro de Cabo de Palos (lighthouse)', lat:37.6330, lng:-0.6900,
+   desc:'The iconic lighthouse on the cliffs — the southern landmark of the classic coastal ride.', url:''},
+  {id:'launion', cat:'view', name:'La Union (mining town climb)', lat:37.6200, lng:-0.8760,
+   desc:'Historic mining town behind Cartagena; gateway to the Sierra Minera climbs and the greenway.', url:''},
+  {id:'cartagena', cat:'view', name:'Cartagena old port', lat:37.6010, lng:-0.9870,
+   desc:'Roman theatre, naval port and a Vuelta a Espana stage town — the big day-trip destination.', url:''},
+  {id:'madness', cat:'coffee', name:'Madness Coffee — Los Alcazares', lat:37.7438, lng:-0.8535,
+   desc:'Specialty coffee shop in Los Alcazares (~6 km down the lagoon). Great breakfast/pastry stop.',
+   tags:['Specialty coffee','Breakfast','Cyclist-friendly'],
+   url:'https://www.google.com/maps/search/Madness+Coffee+Los+Alcazares'},
+  {id:'senator', cat:'stay', name:'Senator Mar Menor Spa Hotel', lat:37.7455, lng:-0.8492,
+   desc:'Officially cycling-friendly hotel in Los Alcazares — bike station, planned cycling itineraries, gym & spa.',
+   tags:['Cycling-friendly','Bike station','Guided routes','Spa'],
+   url:'https://www.senatorhr.com/en/senator-mar-menor-spa-hotel/bike-cycling/'},
+  {id:'ibersol', cat:'stay', name:'Hotel Ibersol Atrio del Mar', lat:37.7402, lng:-0.8456,
+   desc:'Los Alcazares hotel 600 m from the beach, popular with cyclists — bike hire available.',
+   tags:['Bike hire','Near beach','Flat coast'],
+   url:'https://www.google.com/maps/search/Hotel+Ibersol+Atrio+del+Mar+Los+Alcazares'},
+  {id:'camping-mm', cat:'stay', name:'Camping Mar Menor', lat:37.7720, lng:-0.8320,
+   desc:'Budget base between Los Alcazares and San Javier with bicycle-maintenance room and secure parking.',
+   tags:['Bike maintenance room','Secure parking','Budget'],
+   url:'https://cycling-friendly.com/en/items/camping-mar-menor/'},
+  {id:'murcia-bike', cat:'hire', name:'Murcia Bike Hire (delivery)', lat:37.7448, lng:-0.8520,
+   desc:'Quality carbon road & e-bike hire delivered across the Mar Menor and Orihuela Costa.',
+   tags:['Carbon road bikes','E-bikes','Door delivery'],
+   url:'https://murciabikehire.com/'},
+  {id:'biking-lamanga', cat:'hire', name:'Biking La Manga', lat:37.6285, lng:-0.8235,
+   desc:'On-site at La Manga Club Resort — rental, service & repair, with Specialized/BH/Dolan road bikes.',
+   tags:['Rental','Service & repair','At La Manga Club'],
+   url:'http://bikinglamanga.com/'},
+  {id:'etiquette', cat:'hire', name:'Etiquette Cycling — Los Alcazares', lat:37.7425, lng:-0.8505,
+   desc:'Local guided tours with qualified mechanics and local guides, plus bike sales & repair.',
+   tags:['Guided tours','Mechanic','Bike sales'],
+   url:'https://www.google.com/maps/search/Etiquette+Cycling+Los+Alcazares'},
+  {id:'cycleclassic', cat:'hire', name:'Cycle Classic Tours (delivery)', lat:37.7460, lng:-0.8540,
+   desc:'Road-bike rental delivered across the Costa Calida — Cartagena, La Manga, Los Alcazares and beyond.',
+   tags:['Road bike rental','Delivery','Tours'],
+   url:'https://www.cycleclassictours.com/road-bike-rentals-europe/bike-rentals-costa-calida/'},
+  // ---- NEW CAFES ----
+  {id:'confiteria-martin', cat:'coffee', name:'Confiteria Martin', lat:37.8350, lng:-0.7900,
+   desc:'Traditional bakery-cafe in San Pedro del Pinatar open from 5:30 AM. Excellent cakes, pastries, doughnuts and cheesecake. 4.5/5 on 410 reviews — great pre-ride fuel.',
+   tags:['Bakery','Breakfast','Pastries','Early opening'], url:'https://www.tripadvisor.com/Restaurant_Review-g644341-d10501830-Reviews-Confiteria_Martin-San_Pedro_del_Pinatar.html'},
+  {id:'heladeria-sf', cat:'coffee', name:'Heladeria San Francisco', lat:37.6430, lng:-0.7150,
+   desc:'Family-run since 1838. Artisanal ice cream, milkshakes, granizados and pancakes at Zoco Alcazaba in La Manga. Perfect post-ride cool-down.',
+   tags:['Ice cream','Desserts','Family-run since 1838'], url:''},
+  {id:'azabache', cat:'coffee', name:'Azabache Cafe', lat:37.7430, lng:-0.9530,
+   desc:'Well-rated inland cafe in Torre-Pacheco (4.5/5). Good coffee, toasts and pastries — a solid waypoint for cyclists on inland loops.',
+   tags:['Coffee','Breakfast','Inland'], url:''},
+  {id:'cafelab', cat:'coffee', name:'CafeLab', lat:37.5980, lng:-0.9860,
+   desc:'Trendy specialty coffee shop in Cartagena old town near Plaza de los Apostoles. Exceptional espresso with attention to craft.',
+   tags:['Specialty coffee','Trendy','Old town'], url:''},
+  {id:'jose-antonio', cat:'coffee', name:'Jose Antonio Bakery', lat:37.8280, lng:-0.7770,
+   desc:'Bakery and coffee shop in Lo Pagan with waterfront views. Known for great coffee, hot chocolate and fresh baked goods.',
+   tags:['Bakery','Coffee','Beachfront','Breakfast'], url:''},
+  // ---- NEW RESTAURANTS ----
+  {id:'calderos-julia', cat:'food', name:'Los Calderos de Julia', lat:37.7930, lng:-0.8120,
+   desc:'Seafront promenade restaurant in Santiago de la Ribera run by chef Julia Penalver. Specialises in caldero del Mar Menor — rice cooked in fish stock with aioli. 20+ years, rated 4.4/5.',
+   tags:['Seafood','Caldero rice','Beachfront','Local cuisine'], url:'https://loscalderosdejulia.es/'},
+  {id:'la-tana', cat:'food', name:'Restaurante La Tana', lat:37.6320, lng:-0.6920,
+   desc:'Michelin-listed family institution right by Cabo de Palos fishing port. Renowned caldero, grilled squid, red shrimp. Large terrace with harbour views.',
+   tags:['Michelin-listed','Seafood','Harbour views','Traditional'], url:'https://www.la-tana.com'},
+  {id:'san-antonio', cat:'food', name:'Restaurante San Antonio', lat:37.7370, lng:-0.8500,
+   desc:'Unique location at the end of a pier extending into the Mar Menor in Los Alcazares. 360-degree sea views, Mediterranean cuisine. Spectacular at sunset.',
+   tags:['Pier','Seafood','Sunset views','Tapas'], url:''},
+  {id:'rest-ramon', cat:'food', name:'Restaurante Ramon', lat:37.7390, lng:-0.8480,
+   desc:'Authentic Los Alcazares restaurant popular with locals. Famous for caldero del Mar Menor, fresh fish, and 120+ wine references.',
+   tags:['Seafood','Traditional','Wine selection','Local cuisine'], url:''},
+  {id:'miramar', cat:'food', name:'Restaurante Miramar', lat:37.6330, lng:-0.6930,
+   desc:'Mediterranean restaurant at the end of Cabo de Palos port promenade. Specialises in paella, fish cauldrons and Murcian seafood.',
+   tags:['Seafood','Paella','Harbour views'], url:''},
+  {id:'bodega-fuente', cat:'food', name:'Bodega La Fuente', lat:37.5985, lng:-0.9865,
+   desc:'Traditional 1920s tapas bar in Cartagena old town. Famous for house anchovies. A beer plus tapa for under 3 euros — authentic and atmospheric.',
+   tags:['Tapas','Traditional','Budget-friendly','Old town'], url:''},
+  {id:'uva-jumillana', cat:'food', name:'La Uva Jumillana', lat:37.5985, lng:-0.9864,
+   desc:'Popular tapas bar with charming patio just off Cartagena\'s main shopping street. Great tapas, cocktails and wine at affordable prices.',
+   tags:['Tapas','Patio','Cocktails','Budget-friendly'], url:''},
+  {id:'venecora', cat:'food', name:'Freiduria Venecora', lat:37.8290, lng:-0.7780,
+   desc:'Seafood lover\'s paradise on Lo Pagan seafront. 17 different fried fish and shellfish options — casual, no-frills, authentic coastal dining.',
+   tags:['Fried fish','Seafood','Casual','Beachfront'], url:''},
+  {id:'bar-guerrero', cat:'food', name:'Bar Guerrero', lat:37.6530, lng:-0.8060,
+   desc:'Rustic beachfront bar right on the Mar Menor shore in Los Nietos. Expert seafood plates in a cozy setting — good stop on the southern coastal route.',
+   tags:['Seafood','Beachfront','Rustic','Los Nietos'], url:''},
+  {id:'techos-bajos', cat:'food', name:'Restaurante Techos Bajos', lat:37.5960, lng:-0.9830,
+   desc:'Family-run port-side restaurant in Cartagena. Honest, traditional seafood — calamari, octopus, mussels — at very reasonable prices.',
+   tags:['Seafood','Port','Budget-friendly','Traditional'], url:''},
+  {id:'victoria-manga', cat:'food', name:'Cafeteria La Victoria', lat:37.6580, lng:-0.7280,
+   desc:'Family-friendly eatery at km 9 on La Manga strip. Good food, ice cream and cold drinks — popular with families and cyclists riding the spit.',
+   tags:['Cafe','Ice cream','Family-friendly','La Manga'], url:''},
+  // ---- NEW ACCOMMODATION ----
+  {id:'hotel-mm', cat:'stay', name:'Hotel Mar Menor', lat:37.7925, lng:-0.8025,
+   desc:'Budget-friendly 3-star hotel in Santiago de la Ribera, 5-min walk to beach. Free bike rental, balcony rooms, cafe-bar. Rated 8.2.',
+   tags:['Budget','Bike rental','Beachfront','3-star'], url:'https://hotel-mar-menor-santiago-de-la-ribera.vivehotels.com/en/'},
+  {id:'hotel-ribera', cat:'stay', name:'Hotel Ribera', lat:37.7940, lng:-0.8005,
+   desc:'Small seafront hotel right on the Mar Menor promenade in Santiago de la Ribera. Basic, clean rooms with direct beach access.',
+   tags:['Budget','Beachfront','Promenade'], url:'https://www.hotelribera.es/'},
+  {id:'hotel-525', cat:'stay', name:'Hotel 525', lat:37.7445, lng:-0.8490,
+   desc:'Cycling Friendly certified 4-star hotel in Los Alcazares with dedicated bike centre and hire on-site. Popular with cycling groups. Rated 9.0.',
+   tags:['Cycling-friendly','Bike storage','Bike hire','4-star'], url:'https://www.525.es/en/'},
+  {id:'roda-golf', cat:'stay', name:'Roda Golf & Beach Resort', lat:37.7500, lng:-0.8200,
+   desc:'Spacious apartments with large terraces in San Javier. 18-hole golf course, 12 pools, private beach club in La Manga. Good for self-catering cyclists.',
+   tags:['Self-catering','Golf','Pool','Apartments'], url:'https://www.rodagolfinfo.com/'},
+  {id:'hotel-arce', cat:'stay', name:'Hotel Arce', lat:37.8310, lng:-0.7920,
+   desc:'Small 14-room hotel in San Pedro del Pinatar, 7-min walk to beach. Continental breakfast included, from 29 EUR/night. Near the salt flats.',
+   tags:['Budget','Breakfast included','Near salt flats'], url:''},
+  {id:'lodomar', cat:'stay', name:'Hotel Lodomar Spa & Talasoterapia', lat:37.8265, lng:-0.7870,
+   desc:'4-star hotel overlooking Mar Menor in Lo Pagan with exclusive thalassotherapy spa. Turkish baths, heated seawater pools. Near the salt flats park.',
+   tags:['Spa','4-star','Wellness','Lagoon views'], url:'https://www.lodomar.com/en/'},
+  {id:'hyatt-manga', cat:'stay', name:'Grand Hyatt La Manga Club', lat:37.6440, lng:-0.7590,
+   desc:'Cycling Friendly GOLD 5-star resort spanning 1,400 acres. On-site Biking La Manga partner, 3 golf courses, 28 tennis courts, spa. The premier cycling resort in the region.',
+   tags:['Luxury','Cycling-friendly Gold','Bike hire','5-star','Golf','Spa'], url:'https://www.hyatt.com/grand-hyatt/en-US/rmugh-grand-hyatt-la-manga-club-golf-and-spa'},
+  {id:'cetina', cat:'stay', name:'Hotel Cetina Cabo de Palos', lat:37.6325, lng:-0.6930,
+   desc:'Boutique 3-star hotel steps from Playa de Levante and 1.2 km from the lighthouse. Terrace, balcony rooms, 9.5/10 location rating.',
+   tags:['Boutique','Beachfront','Near lighthouse'], url:'https://www.cetinahotels.com/en/cetina-cabodepalos/'},
+  {id:'ona-resort', cat:'stay', name:'Ona Mar Menor Golf & Spa Resort', lat:37.7350, lng:-0.8750,
+   desc:'5-star luxury resort near Torre-Pacheco with golf course, natural hot spring, spa and pools. Set in flat countryside ideal for road cycling.',
+   tags:['Luxury','5-star','Golf','Spa','Pool'], url:'https://www.onahotels.com/en/hotel-mar-menor-la-manga/'},
+  // ---- NEW LANDMARKS ----
+  {id:'encanizadas', cat:'view', name:'Las Encanizadas', lat:37.8050, lng:-0.7500,
+   desc:'Last remaining traditional Moorish-era reed-cage fishing channels in the Mediterranean, at the point where Mar Menor meets the sea. Includes old windmill ruins.',
+   tags:['Heritage','Culture','Trail','Unique'], url:''},
+  {id:'calblanque', cat:'view', name:'Parque Regional de Calblanque', lat:37.6130, lng:-0.7250,
+   desc:'2,400-hectare nature reserve with 13 km of pristine coastline — unspoilt coves, dunes, salt flats and cliffs. Signposted cycle paths. Summer car access restricted but bikes welcome.',
+   tags:['Nature reserve','Wild beaches','Cycling trails','Protected area'], url:''},
+  {id:'teatro-romano', cat:'view', name:'Teatro Romano de Cartagena', lat:37.5995, lng:-0.9841,
+   desc:'Roman theatre built 5-1 BCE for 6,000 spectators. Museum designed by Rafael Moneo. Adjacent to the castle, cathedral and town hall in the heart of Cartagena.',
+   tags:['Roman','Museum','Historic','Culture'], url:''},
+  {id:'castillitos', cat:'view', name:'Bateria de Castillitos', lat:37.5530, lng:-1.0680,
+   desc:'Dramatic 1930s coastal fortress at 250 m elevation with castle-style walls housing massive Vickers guns. A challenging cycling climb rewarded by one of the region\'s best viewpoints.',
+   tags:['Viewpoint','Military heritage','Climb','Photography'], url:''},
+  {id:'parque-minero', cat:'view', name:'Parque Minero de La Union', lat:37.6190, lng:-0.8760,
+   desc:'Open-air mining park centred on the Agrupa Vicenta mine (1869-1957), 80 m deep with a red underground lake. The Camino del 33 trail links to Portman — rideable on gravel.',
+   tags:['Mining heritage','Museum','Gravel trail','Underground lake'], url:''},
+  {id:'portman', cat:'view', name:'Portman Bay', lat:37.5850, lng:-0.8330,
+   desc:'Former Roman port (Portus Magnus) with dramatic coastal scenery where Sierra Minera meets the sea. Major restoration underway. End point of the Camino del 33.',
+   tags:['Coast','Mining heritage','History','Viewpoint'], url:''},
+  {id:'viaverde-start', cat:'view', name:'Via Verde start (Los Dolores)', lat:37.6180, lng:-1.0020,
+   desc:'Reception area and start point of the 53 km Campo de Cartagena greenway. The traffic-free rail-trail runs through citrus groves and farmland toward Totana.',
+   tags:['Greenway','Start point','Traffic-free','Rail trail'], url:'https://viasverdes.com/en/itineraries/campo-de-cartagena/'},
+  {id:'playa-hita', cat:'view', name:'Playa de la Hita', lat:37.7667, lng:-0.8167,
+   desc:'Sandy Mar Menor beach near the salt flats park. Calm, shallow warm water typical of the lagoon — easily accessible by bike from the coastal path.',
+   tags:['Beach','Mar Menor','Calm water','Family'], url:''},
+  // ---- NEW BIKE SHOP ----
+  {id:'mundobici', cat:'hire', name:'Mundobici Cartagena', lat:37.6050, lng:-0.9680,
+   desc:'Full bike shop in Cartagena — sales, workshop, rental including e-bikes (Bosch dealer). The main bike shop serving the Cartagena area.',
+   tags:['Bike shop','Repair','Sales','E-bikes','Rental'], url:'https://mundobici.info/'},
+  // ---- CARTAGENA (new) ----
+  {id:'magoga', cat:'food', name:'Restaurante Magoga', lat:37.5985, lng:-0.9870,
+   desc:'Michelin-starred restaurant by Chef Maria Gomez. Contemporary Mediterranean cuisine using local Murcia produce, outstanding wine list and Spain\'s largest cheese selection.',
+   tags:['Michelin star','Fine dining','Mediterranean','Local produce'], url:'https://restaurantemagoga.com/en/home-english/'},
+  {id:'marquesita', cat:'food', name:'La Marquesita', lat:37.5995, lng:-0.9862,
+   desc:'Michelin-recommended for over a decade. Mediterranean cuisine with creative touches — fresh grilled fish, rice dishes, tapas. Around 50-60 EUR/person.',
+   tags:['Michelin-recommended','Seafood','Fine dining'], url:'https://lamarquesita.net/'},
+  {id:'barrio-sanroque', cat:'food', name:'El Barrio de San Roque', lat:37.5990, lng:-0.9845,
+   desc:'Michelin-selected Mediterranean restaurant. Creative tapas showcasing Murcia region flavours, fresh fish and hearty stews.',
+   tags:['Michelin-selected','Creative tapas','Mediterranean'], url:'https://www.elbarriodesanroque.com/'},
+  {id:'soldadito', cat:'coffee', name:'El Soldadito de Plomo', lat:37.5978, lng:-0.9865,
+   desc:'Quirky vintage cafe themed around "The Little Tin Soldier" near the Roman Theatre. Excellent coffee and phenomenal cakes in a cosy, storybook setting.',
+   tags:['Quirky','Cakes','Vintage','Near Roman Theatre'], url:''},
+  {id:'castillo', cat:'view', name:'Castillo de la Concepcion', lat:37.5983, lng:-0.9878,
+   desc:'Medieval castle on a Roman temple site with a 45 m glass panoramic elevator. The best viewpoint in Cartagena — panoramic views over the old town, harbour and coast.',
+   tags:['Castle','Panoramic viewpoint','History','Elevator'], url:''},
+  {id:'submarino', cat:'view', name:'Submarino Peral', lat:37.5960, lng:-0.9835,
+   desc:'The world\'s first fully electric military submarine (1888), designed by Cartagena-born Isaac Peral. Housed in a glass annex of the Naval Museum by the port.',
+   tags:['Submarine','Naval','Museum','Engineering'], url:''},
+  {id:'calle-mayor', cat:'view', name:'Calle Mayor', lat:37.5990, lng:-0.9855,
+   desc:'Pedestrianised main street paved with blue marble, lined with ornate modernist buildings. Full of shops, bars and tapas places — the heart of Cartagena.',
+   tags:['Shopping','Pedestrian','Modernist architecture'], url:''},
+  {id:'parque-torres', cat:'view', name:'Parque Torres', lat:37.5972, lng:-0.9870,
+   desc:'Tranquil hilltop park with lush planting and panoramic views over the city and harbour. A quieter alternative to the castle viewpoint.',
+   tags:['Park','Viewpoint','Panoramic','Quiet'], url:''},
+  {id:'ac-marriott', cat:'stay', name:'AC Hotel by Marriott Cartagena', lat:37.5998, lng:-0.9850,
+   desc:'Modern 4-star hotel in the historic centre, 200 m from the Roman Theatre. Contemporary rooms with city/port views.',
+   tags:['4-star','Central','Modern','Marriott'], url:'https://www.marriott.com/en-gb/hotels/rmucp-ac-hotel-cartagena/overview/'},
+  {id:'nh-cartagena', cat:'stay', name:'NH Campo Cartagena', lat:37.6060, lng:-0.9790,
+   desc:'100-room hotel 5 min from old town. Minimalist decor, on-site restaurant, bar and gym. Good value option slightly outside the centre.',
+   tags:['Value','Gym','Restaurant','100 rooms'], url:'https://www.nh-hotels.com/en/hotel/nh-campo-cartagena'},
+  // ---- ORIHUELA COSTA (new) ----
+  {id:'keeper', cat:'coffee', name:'Keeper Food & Cocktails', lat:37.977, lng:-0.683,
+   desc:'Prime seafront position on Torrevieja\'s main promenade with covered and uncovered terraces. Good brunch stop for cyclists arriving from the south.',
+   tags:['Seafront','Brunch','Terrace','Torrevieja'], url:'https://torrevieja.com/en/keeper-food-and-cocktails/'},
+  {id:'bahia-caboroig', cat:'food', name:'Restaurante La Bahia', lat:37.910, lng:-0.722,
+   desc:'Right on La Caleta beach beside Cabo Roig marina. Fresh seafood and Mediterranean dishes with exceptional sea views, especially at sunset.',
+   tags:['Beachfront','Seafood','Sunset','Cabo Roig'], url:'https://bahiacaboroig.com/'},
+  {id:'rest-puntaprima', cat:'food', name:'Restaurante Punta Prima', lat:37.934, lng:-0.718,
+   desc:'Long-established seafront restaurant on Punta Prima beach. Specialises in paella, fresh fish and seafood. Large terrace with direct sea views.',
+   tags:['Seafront','Paella','Seafood','Terrace'], url:'https://restaurantepuntaprima.com/en/'},
+  {id:'taberna-caboroig', cat:'food', name:'La Taberna Cabo Roig', lat:37.912, lng:-0.724,
+   desc:'Authentic Spanish tapas on the famous Cabo Roig pedestrianised restaurant strip. Proper, traditional tapas in a lively setting.',
+   tags:['Tapas','Authentic Spanish','Cabo Roig strip'], url:''},
+  {id:'rest-caboroig', cat:'food', name:'Restaurante Cabo Roig', lat:37.912, lng:-0.724,
+   desc:'Well-established traditional Spanish restaurant on the Cabo Roig strip. Reliable paella, grilled fish and classic dishes.',
+   tags:['Spanish','Seafood','Paella','Traditional'], url:''},
+  {id:'bike-experience', cat:'hire', name:'Bike Experience Orihuela Costa', lat:37.920, lng:-0.734,
+   desc:'Full-service bike shop near the canal in Villamartin. Road, gravel and e-bike rental plus cycling gear and repairs.',
+   tags:['Road bike','Gravel','E-bike','Rental','Servicing'], url:'https://www.bike-experience.eu/?lang=en'},
+  {id:'lammertink', cat:'hire', name:'Lammertink Bikes', lat:37.918, lng:-0.730,
+   desc:'Dutch-run bike shop with 200+ bikes in stock. Premium e-bikes (Riese & Muller, Focus), road bikes, sales, rental and full servicing. Delivery within 60 km.',
+   tags:['Premium','E-bikes','200+ bikes','Delivery'], url:'https://lammertinkbikes.com/'},
+  {id:'ropa-cycling', cat:'hire', name:'Ropa Cycling', lat:37.9349, lng:-0.7547,
+   desc:'Road bike and e-bike rental in the same centre as Lovelo cafe. Free delivery for 5+ day rentals.',
+   tags:['Road bike','E-bike','Near Lovelo','Delivery'], url:'https://ropacycling.com/en/'},
+  {id:'cala-capitan', cat:'view', name:'Cala Capitan Beach', lat:37.916, lng:-0.726,
+   desc:'The standout beach on the Orihuela Costa — fine golden sand with its own small rocky island just offshore. Blue Flag status.',
+   tags:['Golden sand','Island','Blue Flag','Swimming'], url:''},
+  {id:'sendero-azul', cat:'view', name:'Cabo Roig Sendero Azul', lat:37.910, lng:-0.721,
+   desc:'2 km coastal path around the Cabo Roig cape with five named viewpoints over reddish cliffs and turquoise water. Views south toward La Manga.',
+   tags:['Cliff walk','Viewpoints','Panoramic','Mediterranean flora'], url:''},
+  {id:'punta-prima', cat:'view', name:'Punta Prima Beach', lat:37.935, lng:-0.718,
+   desc:'Northernmost beach of the Orihuela Costa strip. Wide sandy beach with promenade, beach bars and views north toward Torrevieja.',
+   tags:['Promenade','Sea views','Beach bars','Family'], url:''},
+  {id:'servigroup', cat:'stay', name:'Hotel Servigroup La Zenia', lat:37.927, lng:-0.725,
+   desc:'4-star superior hotel with direct beach access between two sandy beaches. Pool, spa, tennis court and restaurant.',
+   tags:['4-star','Beachfront','Pool','Spa'], url:'https://www.servigroup.com/en/la-zenia-hotel-orihuela-costa/'},
+  // ---- SANTIAGO DE LA RIBERA (new) ----
+  {id:'embarcadero', cat:'food', name:'El Embarcadero de la Ribera', lat:37.7975, lng:-0.8065,
+   desc:'Mediterranean restaurant on the Paseo Colon promenade with outdoor seating overlooking the Mar Menor. Tapas and rice dishes.',
+   tags:['Seafood','Tapas','Terrace','Seafront'], url:'https://elembarcaderolaribera.es/'},
+  {id:'miramar-rib', cat:'food', name:'Miramar La Ribera', lat:37.7995, lng:-0.8085,
+   desc:'Beachfront restaurant overlooking the bay and fishing pier, known for its caldero and Mediterranean seafood. Ranked #6 of 39 in town.',
+   tags:['Seafood','Paella','Caldero','Beachfront'], url:'https://www.miramarlaribera.es/'},
+  {id:'el-marino', cat:'food', name:'El Marino (Gregorio de La Lonja)', lat:37.7993, lng:-0.8082,
+   desc:'Seafront fish restaurant on the Explanada Barnuevo with fresh catch from the Mar Menor. Traditional Murcian seafood and grilled fish.',
+   tags:['Fresh fish','Traditional','Waterfront'], url:''},
+  {id:'la-lonja', cat:'food', name:'Restaurante La Lonja', lat:37.7980, lng:-0.8060,
+   desc:'Seafood restaurant with fishmonger counter where you can also buy fresh fish to take home. Super-fresh Mar Menor catch at good prices.',
+   tags:['Seafood','Fishmonger','Fresh catch','Local'], url:''},
+  {id:'pez-rojo', cat:'food', name:'El Pez Rojo', lat:37.7968, lng:-0.8050,
+   desc:'Family-run restaurant on Paseo Colon serving traditional caldereta and arroz a la marinera since the 1990s, using fresh fish from local fishermen.',
+   tags:['Family-run','Rice dishes','Terrace','Sea views'], url:''},
+  {id:'heladeria-jijona', cat:'coffee', name:'Heladeria Jijona (Roberto Verdu)', lat:37.7972, lng:-0.8055,
+   desc:'Award-winning artisanal ice cream by third-generation heladero Roberto Verdu from Jijona. Won the national prize for best turron ice cream. Terrace overlooking Mar Menor.',
+   tags:['Ice cream','Award-winning','Artisanal','Terrace'], url:''},
+  {id:'montesinos', cat:'coffee', name:'Confiteria Montesinos Escribano', lat:37.8058, lng:-0.8370,
+   desc:'Three-generation family bakery in San Javier, 40+ years. Famous for empanadas and creme rolls. 4.7 stars from 267 reviews.',
+   tags:['Bakery','Pastries','Traditional','San Javier'], url:''},
+  {id:'roots-coffee', cat:'coffee', name:'Roots Coffee', lat:37.8055, lng:-0.8365,
+   desc:'Specialty coffee shop in San Javier town centre. Quality coffee with artisanal breakfasts and brunches in a modern setting.',
+   tags:['Specialty coffee','Brunch','Modern','San Javier'], url:''},
+  {id:'playa-barnuevo', cat:'view', name:'Playa de Barnuevo', lat:37.7995, lng:-0.8090,
+   desc:'The main beach in Santiago de la Ribera — wide golden sand, shallow warm water. Windsurfing, kiteboarding and sailing available. Blue Flag.',
+   tags:['Beach','Watersports','Blue Flag','Family'], url:''},
+  {id:'playa-colon', cat:'view', name:'Playa de Colon', lat:37.7960, lng:-0.8035,
+   desc:'1,000 m sandy beach along the Paseo Colon promenade, lined with century-old palm trees. Calm Mar Menor waters ideal for swimming.',
+   tags:['Beach','Promenade','Palm trees','Swimming'], url:''},
+  {id:'puerto-deportivo', cat:'view', name:'Puerto Deportivo (Marina)', lat:37.8005, lng:-0.8100,
+   desc:'Modern yacht marina with berths and nautical services. Departure point for boat trips on the Mar Menor. Great sunset spot.',
+   tags:['Marina','Boats','Sailing','Sunset'], url:''},
+  {id:'bicis-ribera', cat:'hire', name:'Bicis La Ribera', lat:37.7985, lng:-0.8070,
+   desc:'Local bike shop in central Santiago de la Ribera. Rentals, sales (road, mountain, gravel), repairs, parts and accessories.',
+   tags:['Bike hire','Repairs','Sales','Central'], url:''},
+  {id:'aga', cat:'view', name:'Academia General del Aire', lat:37.7880, lng:-0.8120,
+   desc:'Spanish Air Force academy founded 1943, home of the Patrulla Aguila aerobatics team. Princess Leonor trained here. Imposing entrance and central avenue.',
+   tags:['Military','Aviation','Landmark','Historic'], url:''},
+  {id:'iglesia-sj', cat:'view', name:'Iglesia de San Francisco Javier', lat:37.8060, lng:-0.8375,
+   desc:'Baroque parish church on San Javier\'s main square with carved polychrome wood sculptures and a free parish museum. The Plaza de Espana is the town\'s social hub.',
+   tags:['Church','Plaza','Museum','Historic'], url:''},
+  {id:'parque-almansa', cat:'view', name:'Parque Almansa', lat:37.8070, lng:-0.8360,
+   desc:'San Javier\'s largest park (30,000 sqm) with gardens, play areas and outdoor auditorium. Home of the internationally renowned San Javier Jazz Festival.',
+   tags:['Park','Jazz festival','Gardens','Auditorium'], url:''},
+  {id:'mercado-sj', cat:'view', name:'San Javier Wednesday Market', lat:37.8065, lng:-0.8380,
+   desc:'Weekly street market every Wednesday morning (9:00-13:30) selling fresh local produce, clothing and household items.',
+   tags:['Market','Fresh produce','Weekly','Local'], url:''},
+];
+
+const POI_BY_ID = Object.fromEntries(POIS.map(p=>[p.id,p]));
+const POI_TAGS={
+ lovelo:['Bike shop','Wash & tools','Recovery cake'], paseo:['Beachfront','Coffee'],
+ lopagan:['Tapas','Ice cream','Turnaround'], 'cabo-food':['Seafood','Caldero rice'],
+ cct:['Carbon road bikes','Delivery'], ubbe:['Road bikes','E-bikes'], baybike:['Hire','Lo Pagan'],
+ 'stay-rib':['Seafront','Flat','On cycle network'], 'stay-lamanga':['Gold cycling-friendly','Bike hire on site','Pro training base'],
+ salinas:['Flamingos','Photo stop'], cabo:['Lighthouse','Sea views'], launion:['Mining history','Climbs'], cartagena:['Roman port','Day trip']
+};
+POIS.forEach(p=>{ if(!p.tags && POI_TAGS[p.id]) p.tags=POI_TAGS[p.id]; });
+
+/* Community: clubs, group rides, events and the tools locals actually use */
+const COMMUNITY = [
+ {group:'Clubs & group rides', icon:'&#128692;', items:[
+  {ico:'&#9749;', name:'Lovelo Coffee Ride', meta:'Café · shop · community',
+   desc:'The region’s cyclist café at Dehesa de Campoamor now has a full site — apparel shop, custom club kit, community rides and the café itself.',
+   url:'https://lovelo.shop/'},
+  {ico:'&#127866;', name:'Mar Menor Cycling Club', meta:'Social · 23–25 km/h · coffee stop',
+   desc:'Friendly English-speaking club at Mar Menor Golf Resort. 30–45 km midweek spins with a coffee stop, 60+ km at weekends. WhatsApp group after three rides.',
+   url:'https://www.mmgr.info/mar-menor-cycling-club/'},
+  {ico:'&#129704;', name:'Gravel Murcia C.C.', meta:'Gravel community',
+   desc:'The region’s gravel club — group routes, meet-ups and organisers of the Argaric Gravel Race each autumn.',
+   url:'https://gravelmurcia.com/'},
+  {ico:'&#127937;', name:'Federación de Ciclismo Región de Murcia', meta:'Licences · race calendar',
+   desc:'The regional federation: racing licences and the complete official calendar of every sanctioned event in Murcia.',
+   url:'https://yosoyciclista.com/index.php/es/smartweb/seccion/seccion/murcia/calendario-yosoyciclista'},
+ ]},
+ {group:'Events & racing', icon:'&#127942;', items:[
+  {ico:'&#127937;', name:'Vuelta a la Región de Murcia “Costa Cálida”', meta:'Pro race · February',
+   desc:'The UCI pro race on your local roads every February — the 2026 edition started in Cartagena. Watch it roadside, then ride the route.',
+   url:'https://www.vueltamurcia.es/en'},
+  {ico:'&#129704;', name:'Iron Gravel', meta:'Ultra gravel · spring · 100–720 km',
+   desc:'Self-supported ultra-distance gravel across the Alicante–Murcia interior. 100, 200, 360 and 720 km options — a genuine bucket-list challenge.',
+   url:'https://irongravel.com/en/'},
+  {ico:'&#9935;', name:'Argaric Gravel Race', meta:'Gravel · October · Murcia',
+   desc:'Gravel Murcia’s autumn race through the region’s back-country — entry details via the club site.',
+   url:'https://gravelmurcia.com/'},
+  {ico:'&#127758;', name:'UCI Gravel World Series', meta:'Calendar',
+   desc:'The world series calendar — Spanish rounds (like Castellón) are within striking distance for a race weekend.',
+   url:'https://ucigravelworldseries.com/en/calendar/'},
+ ]},
+ {group:'Route apps & tools', icon:'&#128241;', items:[
+  {ico:'&#128506;', name:'Komoot — Los Alcázares area guide', meta:'Route planning',
+   desc:'Komoot’s curated collection of the best road rides around Los Alcázares and the Mar Menor.',
+   url:'https://www.komoot.com/guide/1532641/cycling-around-los-alcazares'},
+  {ico:'&#128200;', name:'Strava', meta:'Segments · clubs · heatmap',
+   desc:'Segments on every local climb, the global heatmap for scouting new roads, and the area’s clubs.',
+   url:'https://www.strava.com'},
+  {ico:'&#128202;', name:'VeloViewer', meta:'Stats · Explorer tiles',
+   desc:'Deep-dive stats on top of your Strava — Eddington number, Explorer tiles (perfect excuse to ride every lane in the Campo de Cartagena).',
+   url:'https://veloviewer.com'},
+  {ico:'&#129406;', name:'Wikiloc — Región de Murcia', meta:'Trails · GPX',
+   desc:'Thousands of member-recorded routes across Murcia with downloadable GPX — strongest for gravel and MTB.',
+   url:'https://www.wikiloc.com/trails/outdoor/spain/murcia'},
+  {ico:'&#129704;', name:'Gravelmap — Murcia', meta:'Gravel routes',
+   desc:'Community-mapped gravel roads and tracks around the region.',
+   url:'https://gravelmap.com/browse/regin-de-murcia/murcia'},
+  {ico:'&#128740;', name:'Vías Verdes — Campo de Cartagena', meta:'Official greenway info',
+   desc:'The official greenways site: route map, surface conditions and access points for the 53 km rail-trail.',
+   url:'https://viasverdes.com/en/itineraries/campo-de-cartagena/'},
+ ]},
+ {group:'Guides & local info', icon:'&#128214;', items:[
+  {ico:'&#128278;', name:'Epic Road Rides — Cycling Murcia', meta:'In-depth guide',
+   desc:'The best English-language guide to riding the region: routes, logistics, where to stay and when to come.',
+   url:'https://epicroadrides.com/cycling-blog/cycling-murcia-spain/'},
+  {ico:'&#128506;', name:'OriMar Bikes — area guides', meta:'Local route guides',
+   desc:'Local shop’s free cycling area guides for Los Alcázares and the Mar Menor, with hire if you need it.',
+   url:'https://orimarbikes.com/cycling-area-guides/mar-menor-cycling-area-guides/los-alcazares-cycling-routes-bike-hire/'},
+  {ico:'&#127976;', name:'Cycling Friendly — San Javier', meta:'Certified stays',
+   desc:'The Cycling Friendly destination page for San Javier — certified hotels, services and local route info.',
+   url:'https://cycling-friendly.com/items/cycling-san-javier/'},
+ ]},
+];
+
+const ROUTES = [
+  {id:'paseo-loop', name:'Mar Menor Paseo Spin', type:'path', time:'1',
+   dist:14, ascent:15, diff:'Easy', surfaceTxt:'Flat seafront cycle path',
+   summary:'The warm-up classic: flat, traffic-free promenade from Santiago de la Ribera up to Lo Pagan and back.',
+   desc:'Roll straight off the seafront and head north on the dedicated paseo cycleway through San Javier\'s waterfront toward Lo Pagan at the northern tip of the lagoon. Dead flat, sea on your right the whole way, cafe stops every few hundred metres. Ideal shakedown ride or recovery spin.',
+   color:'#059669', stops:['paseo','lopagan','salinas'],
+   coords:[[37.7985,-0.8085],[37.8050,-0.8030],[37.8120,-0.7960],[37.8185,-0.7880],[37.8200,-0.7805],[37.8280,-0.7700],[37.8360,-0.7530]]},
+  {id:'sanjavier-out', name:'San Javier Cafe Loop', type:'road', time:'1',
+   dist:12, ascent:30, diff:'Easy', surfaceTxt:'Quiet roads + new bike lanes',
+   summary:'A gentle inland loop on quiet roads and San Javier\'s growing bike-lane network.',
+   desc:'Head inland to San Javier (~4 km) on quiet roads and the new RM-F34 bike lanes, loop the town for a coffee, then drift back to the coast with the Mar Menor opening up ahead of you.',
+   color:'#3B82F6', stops:['cct','ubbe','paseo'],
+   coords:[[37.7985,-0.8085],[37.8000,-0.8200],[37.8055,-0.8360],[37.8060,-0.8370],[37.8030,-0.8260],[37.7990,-0.8120],[37.7985,-0.8085]]},
+  {id:'losalcazares', name:'Los Alcazares Coast Run', type:'path', time:'2',
+   dist:28, ascent:25, diff:'Easy', surfaceTxt:'Coastal path + promenade',
+   summary:'Flat southbound run hugging the lagoon to Los Alcazares and back — chiringuitos, calm water, fast and social.',
+   desc:'Point south along the water\'s edge past the chiringuitos to Los Alcazares (~7 km each way along the open stretch) and back. As flat as cycling gets — great for a steady two-hour group spin or interval work into the sea breeze.',
+   color:'#059669', stops:['paseo','lopagan'],
+   coords:[[37.7985,-0.8085],[37.7900,-0.8200],[37.7800,-0.8350],[37.7560,-0.8450],[37.7430,-0.8510],[37.7560,-0.8450],[37.7985,-0.8085]]},
+  {id:'lovelo-canal', name:'Lovelo Coffee Ride (Canal Run)', type:'road', time:'day',
+   dist:54, ascent:162, diff:'Moderate', surfaceTxt:'Inland canal / rambla corridor + quiet roads',
+   summary:'The signature coffee ride — your own proven line inland to Lovelo Coffee Ride on the Orihuela Costa.',
+   desc:'Forget the seafront — the quick way to Lovelo runs inland along the service-canal / rambla corridor through the farmland. Roll north out of Santiago de la Ribera, follow the quiet inland lanes past San Pedro and Pilar de la Horadada, then across to Centro Comercial Rioja for the reward: Lovelo Coffee Ride — cyclist cafe + bike shop with racks, wash, tools and proper recovery cake. ~27 km each way. Traced from a real recorded ride.',
+   color:'#3B82F6', stops:['lovelo'],
+   coords:[[37.7985,-0.8085],[37.8120,-0.8040],[37.8315,-0.7972],[37.8520,-0.7880],[37.8680,-0.7760],[37.8778,-0.7700],[37.8917,-0.7630],[37.8870,-0.7480],[37.8842,-0.7385]]},
+  {id:'cabo-coastal', name:'Coastal Ride to Cabo de Palos', type:'road', time:'day',
+   dist:92, ascent:650, diff:'Hard', surfaceTxt:'Coast roads, rolling',
+   summary:'The big one south: down the coast to the Cabo de Palos lighthouse for seafood, then back.',
+   desc:'A proper day out. Roll south down the lagoon coast, past Los Alcazares and Los Nietos, with the open Mediterranean appearing as you approach Cabo de Palos. Climb out to the Faro (lighthouse) for cliff-top views, refuel on caldero rice at the marina, and turn for home.',
+   color:'#3B82F6', stops:['lopagan','cabo','cabo-food'],
+   coords:[[37.7985,-0.8085],[37.7560,-0.8450],[37.7200,-0.8000],[37.6900,-0.7600],[37.6600,-0.7250],[37.6420,-0.7050],[37.6330,-0.6900]]},
+  {id:'launion-gravel', name:'La Union & Sierra Minera (Gravel)', type:'gravel', time:'day',
+   dist:78, ascent:1150, diff:'Hard', surfaceTxt:'Gravel mining tracks + greenway',
+   summary:'Adventurous gravel into the old mining hills behind Cartagena — dramatic Sierra Minera scenery.',
+   desc:'For the gravel bike. Cross the Campo de Cartagena to La Union and climb into the Sierra Minera — a surreal landscape of abandoned mines, headframes and ochre hills with big views over the coast. Link the well-graded greenway/old-railway sections back toward Cartagena. Significant climbing and exposed terrain: carry water and tools.',
+   color:'#D97706', stops:['launion','cartagena'],
+   coords:[[37.7985,-0.8085],[37.7400,-0.8600],[37.7000,-0.8800],[37.6600,-0.8800],[37.6200,-0.8760],[37.6050,-0.9870]]},
+  {id:'viaverde', name:'Via Verde del Campo de Cartagena', type:'gravel', time:'day',
+   dist:70, ascent:300, diff:'Moderate', surfaceTxt:'Disused-railway greenway, ~3 m wide',
+   summary:'Traffic-free gravel greenway on a disused railway across the Campo de Cartagena.',
+   desc:'The Campo de Cartagena Greenway recovers the unfinished Cartagena-Totana railway: a wide, well-signposted, almost traffic-free gravel highway through citrus and almond country. Ride out as far as your legs fancy and turn back. Gentle gradients — perfect intro to gravel touring.',
+   color:'#D97706', stops:['launion'],
+   coords:[[37.7985,-0.8085],[37.7300,-0.8700],[37.6800,-0.9300],[37.6500,-0.9700],[37.6400,-1.0200],[37.6300,-1.0700]]},
+];
+
+const ROUTE_SOURCES = {
+  'paseo-loop':'https://www.komoot.com/highlight/5012560',
+  'sanjavier-out':'https://www.komoot.com/guide/1532657/road-cycling-routes-around-san-javier',
+  'losalcazares':'https://www.komoot.com/guide/1532658/cycling-around-san-javier',
+  'lovelo-canal':'https://cycling-friendly.com/en/items/route-orihuela-la-zenia-rincon-hernandiano/',
+  'cabo-coastal':'https://www.komoot.com/highlight/1288776',
+  'launion-gravel':'https://www.wikiloc.com/mountain-biking-trails/delicatessen-de-calblanque-y-sierra-minera-de-cartagena-4379406',
+  'viaverde':'https://www.turismoregiondemurcia.es/en/campo_cartagena_greenway/'
+};
+ROUTES.forEach(r=> r.source = ROUTE_SOURCES[r.id] || '');
+
+ROUTES.push(
+  {id:'lamanga-spit', name:'La Manga del Mar Menor Out-and-Back', type:'path', time:'2',
+   dist:42, ascent:60, diff:'Easy', surfaceTxt:'Promenade + quiet road along the spit',
+   summary:'The famous 21 km sand-spit between lagoon and open sea — flat out-and-back with water on both sides.',
+   desc:'La Manga is the narrow strip separating the Mar Menor from the Mediterranean. Ride its full length (~21 km each way) on promenades and the quiet seafront road, sea on both sides.',
+   color:'#059669', stops:['cabo','cabo-food'],
+   coords:[[37.6330,-0.7130],[37.6500,-0.7240],[37.6680,-0.7270],[37.6900,-0.7270],[37.7150,-0.7250],[37.7450,-0.7250]],
+   source:'https://www.komoot.com/highlight/5410977'},
+  {id:'calblanque-gravel', name:'Calblanque & Cabo de Palos (Gravel)', type:'gravel', time:'2',
+   dist:34, ascent:420, diff:'Moderate', surfaceTxt:'Regional-park gravel tracks + coast road',
+   summary:'Gravel circular through the wild Calblanque regional park — unspoilt beaches, salt pans and the lighthouse.',
+   desc:'A gravel loop through the protected Calblanque park: golden beaches with no development, the Salinas de Marchamalo salt pans, scrubland climbs and big sea views, finishing at the Faro de Cabo de Palos.',
+   color:'#D97706', stops:['cabo','cabo-food'],
+   coords:[[37.6330,-0.6900],[37.6260,-0.7250],[37.6160,-0.7560],[37.6090,-0.7880],[37.6230,-0.7720],[37.6330,-0.7130],[37.6330,-0.6900]],
+   source:'https://www.komoot.com/guide/162237/cycling-around-reserva-marina-de-cabo-de-palos-islas-hormigas'},
+  {id:'escalona-climb', name:'Sierra de Escalona Climb', type:'road', time:'day',
+   dist:64, ascent:780, diff:'Hard', surfaceTxt:'Quiet inland roads + forest climb',
+   summary:'Head inland off the flat coast into the pine forests of the Sierra de Escalona — the area\'s go-to road climb.',
+   desc:'Trade the flat coast for some real climbing. Roll north-west through the orchards toward San Miguel de Salinas and up into the Sierra de Escalona pine forest — a steady, rewarding ascent with panoramic views back over the Mar Menor.',
+   color:'#3B82F6', stops:['lovelo'],
+   coords:[[37.7985,-0.8085],[37.8300,-0.8400],[37.8700,-0.8700],[37.9050,-0.9000],[37.9300,-0.8700],[37.9100,-0.8400],[37.7985,-0.8085]],
+   source:'https://www.komoot.com/guide/1532657/road-cycling-routes-around-san-javier'}
+);
+
+const ROUTE_PHOTO={
+ 'paseo-loop':'paseo-bike','sanjavier-out':'santiago-bike','losalcazares':'lopagan-bike',
+ 'lovelo-canal':'coffee','cabo-coastal':'cabo-bike','lamanga-spit':'la-manga',
+ 'calblanque-gravel':'cabo-bike','escalona-climb':'encanizadas','launion-gravel':'mining-ruins','viaverde':'mining-ruins-2',
+ 'cf-cabezo':'santiago-bike','cf-rio-seco':'bull-cyclist','cf-trasvase-vv':'mining-ruins-2',
+ 'cf-cresta':'viewpoint-flag','cf-ferry-road':'la-manga','cf-ferry-mtb':'encanizadas',
+ 'cf-rebate':'cyclist-paseo','cf-salinas':'lopagan-bike','cf-castillitos':'cartagena-bike',
+ 'campo-loop':'bull-cyclist','launion-road':'mining-selfie','losnietos':'hero-marmenor',
+ 'avileses-loop':'cyclist-paseo','ricote-epic':'viewpoint-flag','pilar-easy':'paseo-bike'
+};
+const POI_PHOTO={
+ lovelo:'coffee',paseo:'santiago-ribera',lopagan:'hero-marmenor','cabo-food':'cabo-de-palos',
+ cct:'cycling',ubbe:'cycling',baybike:'cycling','stay-rib':'santiago-ribera','stay-lamanga':'la-manga',
+ salinas:'hero-marmenor',cabo:'cabo-de-palos',launion:'cartagena',cartagena:'cartagena',
+ madness:'coffee',senator:'la-manga',ibersol:'santiago-ribera','murcia-bike':'cycling',
+ 'biking-lamanga':'cycling',etiquette:'cycling',cycleclassic:'cycling',
+ 'confiteria-martin':'lopagan-bike','heladeria-sf':'la-manga','cafelab':'cartagena-selfie',
+ 'jose-antonio':'lopagan-bike','calderos-julia':'cyclist-paseo','la-tana':'cabo-bike',
+ 'san-antonio':'santiago-sunset','rest-ramon':'santiago-sunset','miramar':'cabo-bike',
+ 'bodega-fuente':'cartagena-bike','uva-jumillana':'cartagena-bike','venecora':'lopagan-bike',
+ 'bar-guerrero':'hero-marmenor','techos-bajos':'cartagena-bike','victoria-manga':'la-manga',
+ 'hotel-mm':'santiago-bike','hotel-ribera':'santiago-bike','hotel-525':'santiago-sunset',
+ 'roda-golf':'santiago-sunset','lodomar':'lopagan-bike','hyatt-manga':'la-manga',
+ 'cetina':'cabo-bike','calblanque':'cabo-bike','teatro-romano':'cartagena-selfie',
+ 'castillitos':'cartagena-bike','parque-minero':'mining-ruins','portman':'mining-ruins-2',
+ 'encanizadas':'encanizadas','playa-hita':'lopagan-bike','viaverde-start':'viewpoint-flag',
+ 'azabache':'bull-cyclist','hotel-arce':'lopagan-bike','ona-resort':'santiago-bike',
+ 'mundobici':'cartagena-bike','lovelo':'bull-cyclist',
+ 'launion':'mining-selfie','camping-mm':'santiago-bike',
+ 'magoga':'cartagena-bike','marquesita':'cartagena-bike','barrio-sanroque':'cartagena-bike',
+ 'soldadito':'cartagena-selfie','castillo':'cartagena-bike','submarino':'cartagena-bike',
+ 'calle-mayor':'cartagena-selfie','parque-torres':'cartagena-bike',
+ 'ac-marriott':'cartagena-bike','nh-cartagena':'cartagena-bike',
+ 'keeper':'hero-marmenor','bahia-caboroig':'cabo-bike','rest-puntaprima':'hero-marmenor',
+ 'taberna-caboroig':'hero-marmenor','rest-caboroig':'hero-marmenor',
+ 'bike-experience':'cycling','lammertink':'cycling','ropa-cycling':'cycling',
+ 'sendero-azul':'cabo-bike','servigroup':'hero-marmenor',
+ 'embarcadero':'paseo-beer','miramar-rib':'santiago-bike','el-marino':'santiago-bike',
+ 'la-lonja':'santiago-bike','pez-rojo':'paseo-beer','heladeria-jijona':'santiago-sunset',
+ 'montesinos':'santiago-bike','roots-coffee':'santiago-bike',
+ 'playa-barnuevo':'santiago-sunset','playa-colon':'paseo-bike',
+ 'puerto-deportivo':'santiago-sunset','bicis-ribera':'cycling',
+ 'aga':'santiago-bike','iglesia-sj':'santiago-bike'
+};
+
+/* =========================================================================
+   MAP SETUP
+   ========================================================================= */
+const map = L.map('map',{zoomControl:true}).setView([37.74,-0.82], 11);
+const TILE_LAYERS = {
+  default: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
+    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    maxZoom:19, subdomains:'abcd'}),
+  cycling: L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',{
+    attribution:'<a href="https://www.cyclosm.org">CyclOSM</a> &copy; OpenStreetMap', maxZoom:19}),
+  terrain: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{
+    attribution:'&copy; OpenStreetMap &copy; OpenTopoMap', maxZoom:17}),
+  satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+    attribution:'&copy; Esri', maxZoom:19})
+};
+let currentTileLayer = 'default';
+TILE_LAYERS.default.addTo(map);
+
+const baseIcon = L.divIcon({className:'',
+  html:`<div style="width:32px;height:32px;border-radius:50%;background:var(--accent);border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.3);display:grid;place-items:center">
+    <svg viewBox="0 0 24 24" fill="white" width="16" height="16"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1112 6a2.5 2.5 0 010 5z"/></svg></div>`,
+  iconSize:[32,32], iconAnchor:[16,32], popupAnchor:[0,-30]});
+L.marker(BASE,{icon:baseIcon,title:'Home base'}).addTo(map)
+ .bindPopup('<b>Home base</b><br>Santiago de la Ribera — seafront, flat, on the cycle network.');
+
+const routeLayer = L.layerGroup().addTo(map);
+const poiLayers = {};
+Object.keys(POI_CATS).forEach(c=> poiLayers[c]=L.layerGroup().addTo(map));
+let uploadedLayer = null;
+
+function poiIcon(cat){
+  const c = POI_CATS[cat];
+  return L.divIcon({className:'', html:
+    `<div class="poi-marker" style="width:26px;height:26px;background:${c.color}">${catSvg(cat,13)}</div>`,
+    iconSize:[26,26], iconAnchor:[13,13], popupAnchor:[0,-16]});
+}
+
+POIS.forEach(p=>{
+  const m = L.marker([p.lat,p.lng],{icon:poiIcon(p.cat)});
+  const link = p.url ? `<br><a href="${p.url}" target="_blank" rel="noopener">More info &rarr;</a>` : '';
+  const tg = (p.tags&&p.tags.length) ? `<div class="pop-tags">${p.tags.join(' &middot; ')}</div>` : '';
+  m.bindPopup(`<b>${p.name}</b><br>${p.desc}${tg}${link}`);
+  m.addTo(poiLayers[p.cat]);
+});
+
+/* =========================================================================
+   RENDERING
+   ========================================================================= */
+let activeRoute = null;
+let typeFilter = {road:true, gravel:true, path:true};
+let timeFilter = 'all';
+let searchQuery = '';
+let currentView = 'routes';
+let sortBy = 'featured';
+let favOnly = false;
+let yearFilter = 'all';
+
+/* Favourites (persisted) */
+const FAVS = new Set(JSON.parse(localStorage.getItem('velo-favs')||'[]'));
+function saveFavs(){ localStorage.setItem('velo-favs', JSON.stringify([...FAVS])); }
+function toggleFav(id){ FAVS.has(id)?FAVS.delete(id):FAVS.add(id); saveFavs(); }
+const favSvg = on =>`<svg viewBox="0 0 24 24" fill="${on?'currentColor':'none'}" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>`;
+
+/* =========================================================================
+   LANGUAGE (EN / ES)
+   ========================================================================= */
+let LANG = localStorage.getItem('velo-lang') || 'en';
+const TR = (en, es) => LANG === 'es' ? es : en;  /* translation helper — NOT Leaflet's L */
+const diffLabel = d => LANG==='es' ? ({Easy:'Fácil',Moderate:'Media',Hard:'Dura'}[d]||d) : d;
+const typeLabel = t => LANG==='es' ? ({road:'carretera',gravel:'gravel',path:'senda'}[t]||t) : t;
+const scoreLabel = s => LANG==='es' ? ({'Epic day':'Día épico',Good:'Bueno',Fair:'Regular',Tough:'Duro'}[s]||s) : s;
+const catLabel = c => LANG==='es'
+  ? ({coffee:'Cafeterías',food:'Comer y beber',hire:'Alquiler y tiendas',stay:'Alojamiento',view:'Lugares de interés'}[c]||POI_CATS[c].label)
+  : POI_CATS[c].label;
+
+/* [selector, en, es, mode] — mode 'html' uses innerHTML, default replaces the last text node */
+const I18N_STATIC = [
+ ['.header-sub','Cycling Murcia & the Costa Calida','Ciclismo en Murcia y la Costa Cálida'],
+ ['#headerNav [data-nav="home"]','Home','Inicio'],
+ ['#headerNav [data-nav="routes"]','Routes','Rutas'],
+ ['#headerNav [data-nav="rides"]','My Rides','Mis salidas'],
+ ['#headerNav [data-nav="places"]','Places','Lugares'],
+ ['#headerNav [data-nav="community"]','Community','Comunidad'],
+ ['#bottomNav [data-nav="home"] span','Home','Inicio'],
+ ['#bottomNav [data-nav="routes"] span','Routes','Rutas'],
+ ['#bottomNav [data-nav="rides"] span','My Rides','Salidas'],
+ ['#bottomNav [data-nav="places"] span','Places','Lugares'],
+ ['#bottomNav [data-nav="community"] span','Club','Club'],
+ ['#bottomNav [data-nav="map"] span','Map','Mapa'],
+ ['.hero-title','Discover cycling around the Mar Menor','Descubre el ciclismo en el Mar Menor'],
+ ['.hero-desc','Hand-picked road & gravel routes, local cafes, bike hire and your complete ride history — all in one place.','Rutas de carretera y gravel seleccionadas, cafeterías locales, alquiler de bicis y todo tu historial de salidas — en un solo lugar.'],
+ ['#wExplore','Explore routes','Explora las rutas'],
+ ['#wMap','Open the map','Abrir el mapa'],
+ ['.highlights .hl:nth-child(1) b','Days of sunshine','Días de sol'],
+ ['.highlights .hl:nth-child(1) p','One of Europe’s sunniest coasts — rideable year-round','Una de las costas más soleadas de Europa — se rueda todo el año'],
+ ['.highlights .hl:nth-child(2) b','Flat to alpine','Del llano a la montaña'],
+ ['.highlights .hl:nth-child(2) p','Sea-level lagoon paths to serious Sierra climbs — all within 30 km','De la orilla del Mar Menor a puertos serios de la Sierra — todo en 30 km'],
+ ['.highlights .hl:nth-child(3) b','Traffic-free greenways','Vías verdes sin tráfico'],
+ ['.highlights .hl:nth-child(3) p','Via Verde del Campo de Cartagena + coastal promenades','Vía Verde del Campo de Cartagena + paseos marítimos'],
+ ['#wxSection h2','Riding conditions','Condiciones para rodar'],
+ ['#featH2','Featured routes','Rutas destacadas'],
+ ['#commH2','Community & events','Comunidad y eventos'],
+ ['#planH2','Plan your trip','Planifica tu viaje'],
+ ['#wAllRoutes','View all →','Ver todas →'],
+ ['#wCommunity','All clubs, events & tools →','Clubs, eventos y herramientas →'],
+ ['#wLib','Browse all routes','Ver todas las rutas'],
+ ['#wPlaces','Cafes & places','Cafés y lugares'],
+ ['#wMap2','Explore the map','Explorar el mapa'],
+ ['.cta-section h2','Ready to ride?','¿Listo para rodar?'],
+ ['.cta-section p','Choose your adventure','Elige tu aventura'],
+ ['#typeChips [data-type="road"]','Road','Carretera'],
+ ['#typeChips [data-type="gravel"]','Gravel','Gravel'],
+ ['#typeChips [data-type="path"]','Path','Senda'],
+ ['#timeChips [data-time="all"]','All','Todas'],
+ ['#timeChips [data-time="day"]','Day trip','Día completo'],
+ ['#sortChips [data-sort="featured"]','Featured','Destacadas'],
+ ['#sortChips [data-sort="dist"]','Longest','Más largas'],
+ ['#sortChips [data-sort="climb"]','Hilliest','Con más subida'],
+ ['#favChip','★ Saved','★ Guardadas'],
+ ['.info-grid .info-card:nth-child(1) h5','Getting here','Cómo llegar'],
+ ['.info-grid .info-card:nth-child(2) h5','Bikes to your door','Bicis a domicilio'],
+ ['.info-grid .info-card:nth-child(3) h5','Best time to ride','La mejor época'],
+ ['.info-grid .info-card:nth-child(4) h5','The terrain','El terreno'],
+ ['.info-grid .info-card:nth-child(5) h5','Where to base','Dónde alojarse'],
+ ['.info-grid .info-card:nth-child(6) h5','Getting around','Cómo moverse'],
+ ['.drawer-back','Back','Volver'],
+ ['.drawer-stops .section-label','Stops & highlights along the way','Paradas y puntos de interés en el camino'],
+ ['#dGpx','Download GPX','Descargar GPX'],
+ ['#dFly','Fly the route','Sobrevolar la ruta'],
+ ['#dNav','Directions to start','Cómo llegar al inicio'],
+ ['#flyStop','■ Stop','■ Parar'],
+];
+function setLabel(el, txt){
+  for(let i=el.childNodes.length-1;i>=0;i--){
+    const n=el.childNodes[i];
+    if(n.nodeType===3 && n.textContent.trim()){ n.textContent=txt; return; }
+  }
+  el.appendChild(document.createTextNode(txt));
+}
+function applyLang(){
+  document.documentElement.lang = LANG;
+  for(const [sel,en,es] of I18N_STATIC){
+    if(en===null) continue;
+    const el=document.querySelector(sel); if(!el) continue;
+    setLabel(el, LANG==='es'?es:en);
+  }
+  document.getElementById('searchInput').placeholder = TR('Search routes & places...','Buscar rutas y lugares...');
+  document.getElementById('langBtn').textContent = LANG==='es' ? 'EN' : 'ES';
+  document.querySelectorAll('.legend-pill').forEach(p=> setLabel(p, catLabel(p.dataset.cat)));
+}
+document.getElementById('langBtn').onclick=()=>{
+  LANG = LANG==='es' ? 'en' : 'es';
+  localStorage.setItem('velo-lang', LANG);
+  applyLang(); renderSidebar(); buildLanding(); loadWeather();
+  if(activeRoute) openRoute(activeRoute);
+};
+
+function visibleRoutes(){
+  let rs = ROUTES.filter(r=> typeFilter[r.type] && (timeFilter==='all' || r.time===timeFilter));
+  if(favOnly) rs = rs.filter(r=> FAVS.has(r.id));
+  if(searchQuery){
+    const q = searchQuery.toLowerCase();
+    rs = rs.filter(r=> r.name.toLowerCase().includes(q) || r.summary.toLowerCase().includes(q) || r.type.includes(q) || r.diff.toLowerCase().includes(q));
+  }
+  if(sortBy==='dist') rs = [...rs].sort((a,b)=>b.dist-a.dist);
+  else if(sortBy==='climb') rs = [...rs].sort((a,b)=>b.ascent-a.ascent);
+  return rs;
+}
+function showRouteOnMap(r){
+  routeLayer.clearLayers();
+  if(!r||!r.coords||r.coords.length<2) return;
+  // Casing: white underlay beneath the coloured line, like professional cartography
+  L.polyline(r.coords,{color:'#fff',weight:8,opacity:.9,lineJoin:'round',lineCap:'round',interactive:false}).addTo(routeLayer);
+  L.polyline(r.coords,{color:r.color,weight:4,opacity:.95,lineJoin:'round',lineCap:'round'}).addTo(routeLayer);
+  // Start / finish markers
+  const s=r.coords[0], e=r.coords[r.coords.length-1];
+  const dot=bg=>`<div style="width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 5px rgba(0,0,0,.35);display:grid;place-items:center"><div style="width:11px;height:11px;border-radius:50%;background:${bg}"></div></div>`;
+  const mk=(ll,html,ttl)=>L.marker(ll,{icon:L.divIcon({className:'',html,iconSize:[20,20],iconAnchor:[10,10]}),title:ttl,interactive:false}).addTo(routeLayer);
+  if(map.distance(s,e)<150){ mk(s,dot('#0F172A'),'Start / Finish'); }
+  else { mk(s,dot('#059669'),'Start'); mk(e,dot('#DC2626'),'Finish'); }
+  // Frame the route in the space the open drawer leaves free
+  const opts = window.innerWidth>900
+    ? {paddingTopLeft:[50,50], paddingBottomRight:[490,50]}
+    : {paddingTopLeft:[30,30], paddingBottomRight:[30, Math.round(map.getSize().y*0.5)]};
+  map.fitBounds(L.latLngBounds(r.coords), opts);
+}
+function clearRouteFromMap(){ routeLayer.clearLayers(); }
+function setLanding(show){ document.getElementById('landing').classList.toggle('hidden',!show); }
+function timeLabel(t){ return t==='1'?TR('~1 hr','~1 h'):t==='2'?TR('~2 hr','~2 h'):t==='day'?TR('Day trip','Día completo'):''; }
+function diffClass(d){ return d==='Easy'?'b-easy':d==='Moderate'?'b-moderate':d==='Hard'?'b-hard':''; }
+const ridBadge=r=>r.riddenCount>1?` <span class="badge b-repeat">${r.riddenCount}${TR('x ridden','x rodada')}</span>`:'';
+
+function routeThumb(coords, color){
+  const lats=coords.map(c=>c[0]),lngs=coords.map(c=>c[1]);
+  const minLa=Math.min(...lats),maxLa=Math.max(...lats),minLo=Math.min(...lngs),maxLo=Math.max(...lngs);
+  const W=320,H=100,pad=16,sx=(maxLo-minLo)||1,sy=(maxLa-minLa)||1;
+  const sc=Math.min((W-2*pad)/sx,(H-2*pad)/sy),ox=(W-sx*sc)/2,oy=(H-sy*sc)/2;
+  const step=Math.max(1,Math.floor(coords.length/500));
+  let d='M';
+  for(let i=0;i<coords.length;i+=step){const x=ox+(coords[i][1]-minLo)*sc,y=H-(oy+(coords[i][0]-minLa)*sc);d+=` ${x.toFixed(1)} ${y.toFixed(1)}`;}
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
+    <path d="${d}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity=".7"/></svg>`;
+}
+
+function elevSpark(prof, color){
+  if(!prof||prof.length<2) return '';
+  const W=280,H=34;
+  const xs=prof.map(p=>p[0]),ys=prof.map(p=>p[1]);
+  const maxX=xs[xs.length-1]||1,minY=Math.min(...ys),ry=(Math.max(...ys)-minY)||1;
+  let line='';
+  prof.forEach((p,i)=>{line+=(i?' L ':'M ')+(p[0]/maxX*W).toFixed(1)+' '+(H-3-(p[1]-minY)/ry*(H-9)).toFixed(1);});
+  const area=line+` L ${W} ${H} L 0 ${H} Z`;
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <path d="${area}" fill="${color}" opacity=".12"/>
+    <path d="${line}" fill="none" stroke="${color}" stroke-width="1.5" opacity=".75"/></svg>`;
+}
+
+function buildElevProfile(coords, eles){
+  if(!coords||coords.length<2||!eles||!eles.some(e=>e!=null)) return null;
+  const N=coords.length,cum=[0];
+  for(let i=1;i<N;i++) cum[i]=cum[i-1]+map.distance(coords[i-1],coords[i]);
+  const step=Math.max(1,Math.floor(N/240)); const prof=[]; let last=0;
+  for(let i=0;i<N;i+=step){let e=eles[i]; if(e==null) e=last; else last=e; prof.push([cum[i]/1000,e,coords[i][0],coords[i][1]]);}
+  return prof;
+}
+
+function elevChart(prof, color){
+  if(!prof||prof.length<2) return '';
+  const W=720,H=130,pad=6,base=H-18;
+  const xs=prof.map(p=>p[0]),ys=prof.map(p=>p[1]);
+  const maxX=xs[xs.length-1]||1,minY=Math.min(...ys),maxY=Math.max(...ys),ry=(maxY-minY)||1;
+  const X=v=>pad+v/maxX*(W-2*pad);
+  const Y=v=>base-(v-minY)/ry*(base-pad);
+  let d='M '+X(prof[0][0]).toFixed(1)+' '+Y(prof[0][1]).toFixed(1);
+  for(const p of prof) d+=' L '+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1);
+  const area=d+` L ${X(maxX).toFixed(1)} ${base} L ${pad} ${base} Z`;
+  const grad=`url(#eg-${color.replace('#','')})`;
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block">
+    <defs><linearGradient id="eg-${color.replace('#','')}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity=".2"/><stop offset="100%" stop-color="${color}" stop-opacity=".02"/></linearGradient></defs>
+    <path d="${area}" fill="${grad}"/><path d="${d}" fill="none" stroke="${color}" stroke-width="2"/>
+    <text x="${pad}" y="12" fill="#9CA3AF" font-size="11" font-family="Inter,system-ui,sans-serif">${Math.round(maxY)} m</text>
+    <text x="${W-pad}" y="${H-4}" fill="#9CA3AF" font-size="11" text-anchor="end" font-family="Inter,system-ui,sans-serif">${maxX.toFixed(1)} km</text>
+    <text x="${pad}" y="${H-4}" fill="#9CA3AF" font-size="11" font-family="Inter,system-ui,sans-serif">${Math.round(minY)} m</text></svg>`;
+}
+
+/* =========================================================================
+   SIDEBAR RENDERING
+   ========================================================================= */
+const VIEW_TITLES_ALL={
+ en:{
+  routes:['Routes','Hand-picked road, gravel and traffic-free rides around the Mar Menor — filter by surface, length or what you’ve saved.'],
+  library:['My Rides','Your real ride history, decoded straight from the Wahoo files — every km, every metre of climbing.'],
+  places:['Places','Cafés, restaurants, bike shops, cycling-friendly stays and landmarks worth riding to.'],
+  community:['Community & links','Local clubs and group rides, the season’s events, and the apps and guides riders here actually use.']
+ },
+ es:{
+  routes:['Rutas','Rutas de carretera, gravel y vías sin tráfico seleccionadas alrededor del Mar Menor — filtra por superficie, distancia o guardadas.'],
+  library:['Mis salidas','Tu historial real de salidas, decodificado directamente de los archivos del Wahoo — cada km, cada metro de desnivel.'],
+  places:['Lugares','Cafeterías, restaurantes, tiendas de bicis, alojamientos cycling-friendly y lugares que merecen la pedalada.'],
+  community:['Comunidad y enlaces','Clubs locales y salidas en grupo, los eventos de la temporada y las apps y guías que se usan por aquí.']
+ }
+};
+const VIEW_TITLES=new Proxy({},{get:(_,k)=>VIEW_TITLES_ALL[LANG][k]});
+function renderSidebar(){
+  const fb=document.getElementById('filterBar');
+  fb.style.display = (currentView==='places'||currentView==='community')?'none':'';
+  const vt=document.getElementById('viewTitle');
+  const t=VIEW_TITLES[currentView];
+  vt.innerHTML=t?`<h2>${t[0]}</h2><p>${t[1]}</p>`:'';
+  const el=document.getElementById('routeList');
+  const rc=document.getElementById('resultCount');
+  if(currentView==='routes') renderRouteList(el,rc);
+  else if(currentView==='library') renderLibrary(el,rc);
+  else if(currentView==='community') renderCommunity(el,rc);
+  else renderPlaces(el,rc);
+}
+
+function renderCommunity(el,rc){
+  el.className='places-grid';
+  el.innerHTML='';
+  if(rc) rc.textContent='';
+  COMMUNITY.forEach(g=>{
+    const hdr=document.createElement('div'); hdr.className='place-group-header';
+    hdr.innerHTML=`<span style="font-size:13px">${g.icon}</span>${g.group} (${g.items.length})`;
+    el.appendChild(hdr);
+    g.items.forEach(it=>{
+      const card=document.createElement('a');
+      card.className='place-card'; card.href=it.url; card.target='_blank'; card.rel='noopener';
+      card.style.textDecoration='none'; card.style.color='inherit';
+      card.innerHTML=`<div class="comm-ico">${it.ico}</div>
+        <div style="min-width:0"><b>${it.name} <span style="color:var(--gray-400);font-weight:400">&#8599;</span></b>
+        <div class="place-desc" style="-webkit-line-clamp:3">${it.desc}</div>
+        <span class="comm-meta">${it.meta}</span></div>`;
+      el.appendChild(card);
+    });
+  });
+}
+
+function renderRouteList(el,rc){
+  const rs=visibleRoutes();
+  if(rc) rc.textContent=rs.length?TR(`Showing ${rs.length} route${rs.length>1?'s':''}`,`${rs.length} ruta${rs.length>1?'s':''}`):TR('No routes match these filters','Ninguna ruta con estos filtros');
+  el.className='route-grid';
+  el.innerHTML='';
+  rs.forEach(r=>{
+    const card=document.createElement('div');
+    card.className='route-card'+(activeRoute===r.id?' active':'');
+    const ph=ROUTE_PHOTO[r.id]; const hasPhoto=ph&&!r.imported;
+    const thumbContent=hasPhoto
+      ?`<img class="rc-photo" src="assets/${ph}.jpg" alt="" loading="lazy"><div class="rc-photo-ov"></div>`
+      :(r.coords&&r.coords.length>1?routeThumb(r.coords,r.color):'');
+    card.innerHTML=`
+      <div class="rc-thumb">${thumbContent}
+        <span class="badge b-${r.type} rc-type-badge">${typeLabel(r.type)}</span>
+        <span class="badge ${diffClass(r.diff)} rc-diff-badge">${diffLabel(r.diff)}</span>
+        <button class="fav-btn${FAVS.has(r.id)?' on':''}" title="Save route">${favSvg(FAVS.has(r.id))}</button>
+      </div>
+      <div class="rc-body">
+        <h3>${r.name}</h3>
+        <div class="rc-badges">
+          ${r.imported?`<span class="badge b-yours">${TR('Your ride','Tu salida')}</span>`:''}${ridBadge(r)}
+        </div>
+        <div class="rc-meta">
+          <span><b>${r.dist}</b> km</span>
+          <span>&uarr; <b>${r.ascent}</b> m</span>
+          <span>${timeLabel(r.time)}</span>
+        </div>
+        <div class="rc-summary">${r.summary}</div>
+        ${r.elev?`<div class="rc-spark">${elevSpark(r.elev,r.color)}</div>`:''}
+      </div>`;
+    card.onclick=()=>openRoute(r.id);
+    card.querySelector('.fav-btn').onclick=ev=>{ev.stopPropagation();toggleFav(r.id);renderSidebar();};
+    el.appendChild(card);
+  });
+}
+
+function renderLibrary(el,rc){
+  const all=ROUTES.filter(r=>r.imported);
+  let rs=visibleRoutes().filter(r=>r.imported);
+  if(yearFilter!=='all') rs=rs.filter(r=>r.year===yearFilter);
+  if(rc) rc.textContent=rs.length?TR(`Showing ${rs.length} ride${rs.length>1?'s':''}`,`${rs.length} salida${rs.length>1?'s':''}`):(all.length?TR('No rides match','Sin coincidencias'):'');
+  el.className='route-grid';
+  el.innerHTML='';
+
+  if(!all.length){
+    el.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:48px 20px;color:var(--gray-500)">
+      <div style="font-size:32px;margin-bottom:10px">&#128692;</div>
+      <b style="display:block;font-size:15px;color:var(--gray-800);margin-bottom:6px">No rides yet</b>
+      Use the <b>+</b> button on the map to add a GPX or FIT file &mdash; your rides will appear here.</div>`;
+    return;
+  }
+
+  // Career dashboard
+  const rides=all.reduce((a,r)=>a+(r.riddenCount||1),0);
+  const km=Math.round(all.reduce((a,r)=>a+r.dist*(r.riddenCount||1),0));
+  const asc=Math.round(all.reduce((a,r)=>a+r.ascent*(r.riddenCount||1),0));
+  const longest=Math.max(...all.map(r=>r.dist));
+  const dash=document.createElement('div');
+  dash.style.gridColumn='1/-1';
+  const years=[...new Set(all.map(r=>r.year).filter(Boolean))].sort((a,b)=>b-a);
+  dash.innerHTML=`
+    <div class="dash">
+      <div class="l-stat"><div class="n">${rides}</div><div class="k">${TR('Rides','Salidas')}</div></div>
+      <div class="l-stat"><div class="n">${km.toLocaleString()}</div><div class="k">${TR('km ridden','km recorridos')}</div></div>
+      <div class="l-stat"><div class="n">${asc.toLocaleString()}</div><div class="k">${TR('m climbed','m de desnivel')}</div></div>
+      <div class="l-stat"><div class="n">${longest}</div><div class="k">${TR('Longest (km)','La más larga (km)')}</div></div>
+    </div>
+    <div class="dash-actions">
+      <button class="btn btn-secondary btn-sm" id="heatBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="15" height="15"><path d="M12 22c4.4 0 8-3.6 8-8 0-5-4-8-5.5-11C13 6 9 6.5 9 10c-1.5-1-2-2.5-2-4-2 2-3 5-3 8 0 4.4 3.6 8 8 8z"/></svg>
+        ${heatOn?TR('Hide','Ocultar'):TR('Show','Ver')} ${TR('all rides on map','todas las salidas en el mapa')}
+      </button>
+      <div class="filter-chips" id="yearChips">
+        <button class="filter-chip${yearFilter==='all'?' active':''}" data-year="all">${TR('All years','Todos los años')}</button>
+        ${years.map(y=>`<button class="filter-chip${yearFilter===y?' active':''}" data-year="${y}">${y}</button>`).join('')}
+      </div>
+    </div>`;
+  el.appendChild(dash);
+  dash.querySelector('#heatBtn').onclick=()=>{toggleHeat(); if(heatOn) navigateTo('map'); else renderSidebar();};
+  dash.querySelectorAll('#yearChips .filter-chip').forEach(c=>c.onclick=()=>{
+    const y=c.dataset.year; yearFilter=(y==='all')?'all':parseInt(y); renderSidebar();
+  });
+
+  rs.forEach(r=>{
+    const card=document.createElement('div');
+    card.className='route-card';
+    const thumb=(r.coords&&r.coords.length>1)?routeThumb(r.coords,r.color):'';
+    card.innerHTML=`
+      <div class="rc-thumb">${thumb}
+        <span class="badge b-${r.type} rc-type-badge">${typeLabel(r.type)}</span>
+        <span class="badge ${diffClass(r.diff)} rc-diff-badge">${diffLabel(r.diff)}</span>
+        <button class="fav-btn${FAVS.has(r.id)?' on':''}" title="Save ride">${favSvg(FAVS.has(r.id))}</button>
+      </div>
+      <div class="rc-body">
+        <h3>${r.name}</h3>
+        <div class="rc-badges">
+          ${r.year?`<span class="badge b-yours">${r.year}</span>`:''}${ridBadge(r)}
+        </div>
+        <div class="rc-meta">
+          <span><b>${r.dist}</b> km</span>
+          <span>&uarr; <b>${r.ascent}</b> m</span>
+          <span>${timeLabel(r.time)}</span>
+        </div>
+        ${r.elev?`<div class="rc-spark">${elevSpark(r.elev,r.color)}</div>`:''}
+      </div>`;
+    card.onclick=()=>openRoute(r.id);
+    card.querySelector('.fav-btn').onclick=ev=>{ev.stopPropagation();toggleFav(r.id);renderSidebar();};
+    el.appendChild(card);
+  });
+}
+
+/* ===== ALL-RIDES HEATMAP ===== */
+let heatLayer=null, heatOn=false;
+function toggleHeat(){
+  if(!heatLayer){
+    heatLayer=L.layerGroup();
+    ROUTES.filter(r=>r.imported&&r.coords&&r.coords.length>1).forEach(r=>
+      L.polyline(r.coords,{color:'#F97316',weight:2.5,opacity:.3,lineCap:'round',interactive:false}).addTo(heatLayer));
+  }
+  heatOn=!heatOn;
+  if(heatOn){
+    map.addLayer(heatLayer);
+    const bs=[]; heatLayer.eachLayer(l=>bs.push(l.getBounds()));
+    if(bs.length){let b=bs[0]; bs.forEach(x=>b=b.extend(x)); map.fitBounds(b.pad(0.05));}
+    showNote('Every ride you’ve logged, on one map. Tap the flame button to hide.');
+  } else map.removeLayer(heatLayer);
+  const hb=document.getElementById('heatMapBtn');
+  if(hb) hb.classList.toggle('accent',heatOn);
+}
+
+function renderPlaces(el,rc){
+  el.className='places-grid';
+  el.innerHTML='';
+  let filteredPois = POIS;
+  if(searchQuery){
+    const q=searchQuery.toLowerCase();
+    filteredPois=POIS.filter(p=>p.name.toLowerCase().includes(q)||p.desc.toLowerCase().includes(q)||(p.tags||[]).some(t=>t.toLowerCase().includes(q)));
+  }
+  if(rc) rc.textContent=`${filteredPois.length} ${TR(filteredPois.length>1?'places':'place', filteredPois.length>1?'lugares':'lugar')}`;
+  Object.entries(POI_CATS).forEach(([cat,c])=>{
+    const items=filteredPois.filter(p=>p.cat===cat); if(!items.length) return;
+    const hdr=document.createElement('div'); hdr.className='place-group-header';
+    hdr.innerHTML=`<span class="ldot" style="width:8px;height:8px;border-radius:50%;background:${c.color};display:inline-block"></span>${catLabel(cat)} (${items.length})`;
+    el.appendChild(hdr);
+    items.forEach(p=>{
+      const card=document.createElement('div'); card.className='place-card';
+      const link=p.url?` <a href="${p.url}" target="_blank" rel="noopener" style="font-size:12px">&rarr;</a>`:'';
+      const ph=POI_PHOTO[p.id];
+      const thumb=ph?`<img class="place-img" src="assets/${ph}.jpg" alt="" loading="lazy">`
+        :`<div class="place-icon" style="background:${c.color}">${catSvg(cat,17)}</div>`;
+      const tags=(p.tags||[]).map(t=>`<span class="place-tag">${t}</span>`).join('');
+      card.innerHTML=`${thumb}<div style="min-width:0"><b>${p.name}</b>${link}<div class="place-desc">${p.desc}</div>${tags?`<div class="place-tags">${tags}</div>`:''}</div>`;
+      card.onclick=()=>{if(!map.hasLayer(poiLayers[cat]))map.addLayer(poiLayers[cat]);map.setView([p.lat,p.lng],14);poiLayers[cat].eachLayer(l=>{if(Math.abs(l.getLatLng().lat-p.lat)<1e-6)l.openPopup();});navigateTo('map');};
+      el.appendChild(card);
+    });
+  });
+}
+
+/* =========================================================================
+   LANDING PAGE
+   ========================================================================= */
+function buildLanding(){
+  const imp=ROUTES.filter(r=>r.imported);
+  const totalKm=Math.round(imp.reduce((a,r)=>a+r.dist*(r.riddenCount||1),0));
+  const ls=document.getElementById('lStats');
+  if(ls){
+    const rideCards = imp.length ? `
+    <div class="l-stat"><div class="n">${imp.length}</div><div class="k">${TR('Your rides','Tus salidas')}</div></div>
+    <div class="l-stat"><div class="n">${totalKm.toLocaleString()}</div><div class="k">${TR('km logged','km registrados')}</div></div>` : `
+    <div class="l-stat"><div class="n">${new Set(POIS.filter(p=>p.cat==='coffee').map(p=>p.id)).size}</div><div class="k">${TR('Coffee stops','Cafeterías')}</div></div>
+    <div class="l-stat"><div class="n">300+</div><div class="k">${TR('Sunny days','Días de sol')}</div></div>`;
+    ls.innerHTML=`
+    <div class="l-stat"><div class="n">${ROUTES.length}</div><div class="k">${TR('Routes','Rutas')}</div></div>${rideCards}
+    <div class="l-stat"><div class="n">${POIS.length}</div><div class="k">${TR('Places','Lugares')}</div></div>`;
+    ls.querySelectorAll('.n').forEach(el=>{
+      const target=parseFloat(el.textContent.replace(/,/g,'')); if(!target) return;
+      const t0=performance.now(), dur=900;
+      const tick=n=>{const f=Math.min(1,(n-t0)/dur);
+        el.textContent=Math.round(target*(1-Math.pow(1-f,3))).toLocaleString();
+        if(f<1) requestAnimationFrame(tick);};
+      requestAnimationFrame(tick);
+    });
+  }
+  const feat=['cabo-coastal','lovelo-canal','cf-cresta','paseo-loop','cf-castillitos','viaverde'].map(id=>ROUTES.find(r=>r.id===id)).filter(Boolean);
+  const lf=document.getElementById('lFeat');
+  if(lf){lf.innerHTML=feat.map(r=>{
+    const ph=ROUTE_PHOTO[r.id]; const img=ph?`<img src="assets/${ph}.jpg" alt="" loading="lazy">`:'';
+    return `<div class="feat-card" data-id="${r.id}"><div class="fc-img">${img}<span class="badge b-${r.type}">${typeLabel(r.type)}</span><span class="badge ${diffClass(r.diff)} diff-badge">${diffLabel(r.diff)}</span></div>
+      <div class="fc-body"><h4>${r.name.split('(')[0].trim()}</h4><div class="fc-meta"><span><b>${r.dist}</b> km</span><span>&uarr; <b>${r.ascent}</b> m</span><span>${timeLabel(r.time)}</span></div></div></div>`;
+  }).join('');
+  lf.querySelectorAll('.feat-card').forEach(c=>c.onclick=()=>openRoute(c.dataset.id));}
+}
+
+/* =========================================================================
+   DETAIL DRAWER
+   ========================================================================= */
+function openRoute(id){
+  const r = ROUTES.find(x=>x.id===id); if(!r) return;
+  activeRoute=id;
+  document.getElementById('sidebar').classList.add('hidden');
+  setLanding(false);
+  showRouteOnMap(r);
+
+  document.getElementById('dTitle').textContent=r.name;
+  document.getElementById('dSub').innerHTML=`<span class="badge b-${r.type}">${typeLabel(r.type)}</span>
+    <span class="badge ${diffClass(r.diff)}">${diffLabel(r.diff)}</span>
+    <span style="color:var(--gray-400)">${r.surfaceTxt} &middot; ${timeLabel(r.time)}</span>`;
+  document.getElementById('dStats').innerHTML=`
+    <div class="ds"><div class="ds-n">${r.dist}</div><div class="ds-k">km</div></div>
+    <div class="ds"><div class="ds-n">${r.ascent}</div><div class="ds-k">${TR('m ascent','m desnivel')}</div></div>
+    <div class="ds"><div class="ds-n">${diffLabel(r.diff)}</div><div class="ds-k">${TR('difficulty','dificultad')}</div></div>
+    <div class="ds"><div class="ds-n">${Math.round(r.dist/22*60)}</div><div class="ds-k">min @ 22 km/h</div></div>`;
+
+  const hero=document.getElementById('dHero'); const rph=ROUTE_PHOTO[r.id];
+  if(rph && !r.imported){
+    hero.innerHTML=`<div class="dh-bg" style="background-image:url('assets/${rph}.jpg')"></div><div class="dh-ov"></div>`+
+      `<div class="dh-tag">${r.name.split('(')[0].trim()}</div>`+
+      (r.coords&&r.coords.length>1?`<div class="dh-trace">${routeThumb(r.coords,'rgba(255,255,255,.8)')}</div>`:'');
+  } else {
+    hero.innerHTML=(r.coords&&r.coords.length>1)
+      ?`<div class="dh-tag">${r.imported?'Your ride':'Route shape'}</div>`+routeThumb(r.coords,r.color):'';
+  }
+
+  const elEl=document.getElementById('dElev');
+  if(r.elev&&r.elev.length>1){elEl.style.display='block';
+    elEl.innerHTML=`<div class="de-label">${TR('Elevation profile','Perfil de elevación')} <span style="text-transform:none;letter-spacing:0;font-weight:500">&mdash; ${TR('hover to explore','pasa el cursor para explorar')}</span></div><div class="de-frame">${elevChart(r.elev,r.color)}</div>`;
+    attachElevHover(elEl.querySelector('.de-frame'), r);
+  } else {elEl.style.display='none';elEl.innerHTML='';}
+
+  document.getElementById('dDesc').textContent=r.desc;
+  const stopsEl=document.getElementById('dStops'); stopsEl.innerHTML='';
+  r.stops.forEach(sid=>{
+    const p=POI_BY_ID[sid]; if(!p) return;
+    const c=POI_CATS[p.cat];
+    const div=document.createElement('div'); div.className='stop-item';
+    div.innerHTML=`<div class="stop-icon" style="background:${c.color}">${catSvg(p.cat,13)}</div>
+      <div><b>${p.name}</b> <span>— ${p.desc}</span></div>`;
+    div.onclick=()=>{map.setView([p.lat,p.lng],14);poiLayers[p.cat].eachLayer(l=>{if(Math.abs(l.getLatLng().lat-p.lat)<1e-6)l.openPopup();});};
+    stopsEl.appendChild(div);
+  });
+
+  document.getElementById('dGpx').onclick=()=>downloadGPX(r);
+  document.getElementById('dFly').onclick=()=>flyRoute(r);
+  document.getElementById('dNav').onclick=()=>{
+    const s=r.coords&&r.coords[0]; if(!s) return;
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${s[0].toFixed(5)},${s[1].toFixed(5)}&travelmode=bicycling`,'_blank');
+  };
+  const favBtn=document.getElementById('dFav');
+  const syncFav=()=>{
+    const on=FAVS.has(r.id);
+    favBtn.querySelector('svg').setAttribute('fill',on?'currentColor':'none');
+    favBtn.style.color=on?'#F59E0B':'';
+    document.getElementById('dFavTxt').textContent=on?TR('Saved','Guardada'):TR('Save','Guardar');
+  };
+  favBtn.onclick=()=>{toggleFav(r.id);syncFav();};
+  syncFav();
+  const kbtn=document.getElementById('dKomoot');
+  if(r.source){
+    kbtn.style.display='inline-flex';
+    kbtn.querySelector('svg').nextSibling.textContent = r.imported?TR('Open original activity','Abrir actividad original'):TR('View source route','Ver ruta original');
+    kbtn.onclick=()=>window.open(r.source,'_blank');
+  } else {kbtn.style.display='none';}
+  history.replaceState(null,'','#route='+encodeURIComponent(id));
+  document.getElementById('drawer').classList.add('open');
+}
+
+/* ===== INTERACTIVE ELEVATION HOVER ===== */
+let elevMk=null;
+function attachElevHover(frame,r){
+  const prof=r.elev, svg=frame&&frame.querySelector('svg');
+  if(!prof||prof.length<2||!svg) return;
+  const line=document.createElement('div'); line.className='de-hover';
+  const tip=document.createElement('div'); tip.className='de-tip';
+  frame.appendChild(line); frame.appendChild(tip);
+  const maxKm=prof[prof.length-1][0]||1;
+  const move=ev=>{
+    const rect=svg.getBoundingClientRect();
+    const cx=ev.touches?ev.touches[0].clientX:ev.clientX;
+    const frac=Math.max(0,Math.min(1,(cx-rect.left)/rect.width));
+    const km=frac*maxKm;
+    let lo=0,hi=prof.length-1;
+    while(hi-lo>1){const mid=(lo+hi)>>1; if(prof[mid][0]<km)lo=mid; else hi=mid;}
+    const i=(km-prof[lo][0] < prof[hi][0]-km)?lo:hi, p=prof[i];
+    const j=Math.min(prof.length-1,i+1), k=Math.max(0,i-1);
+    const dd=(prof[j][0]-prof[k][0])*1000;
+    const grad=dd>0?(prof[j][1]-prof[k][1])/dd*100:0;
+    const frect=frame.getBoundingClientRect();
+    const fx=rect.left-frect.left+frac*rect.width;
+    line.style.left=fx+'px'; line.style.opacity=1;
+    tip.innerHTML=`<b>${p[0].toFixed(1)} km</b> &middot; ${Math.round(p[1])} m &middot; ${grad>=0?'+':''}${grad.toFixed(1)}%`;
+    tip.style.left=Math.max(60,Math.min(frect.width-60,fx))+'px'; tip.style.opacity=1;
+    if(p[2]!=null){
+      if(!elevMk) elevMk=L.circleMarker([p[2],p[3]],{radius:7,color:'#fff',weight:2.5,fillColor:r.color,fillOpacity:1,interactive:false});
+      elevMk.setLatLng([p[2],p[3]]).setStyle({fillColor:r.color});
+      if(!map.hasLayer(elevMk)) elevMk.addTo(map);
+    }
+  };
+  const leave=()=>{
+    line.style.opacity=0; tip.style.opacity=0;
+    if(elevMk&&map.hasLayer(elevMk)) map.removeLayer(elevMk);
+  };
+  frame.addEventListener('mousemove',move);
+  frame.addEventListener('touchmove',move,{passive:true});
+  frame.addEventListener('mouseleave',leave);
+  frame.addEventListener('touchend',leave);
+}
+
+/* ===== ROUTE FLY-THROUGH ===== */
+let fly={raf:null};
+function stopFly(){
+  if(fly.raf) cancelAnimationFrame(fly.raf);
+  if(fly.mk) map.removeLayer(fly.mk);
+  if(fly.trail) map.removeLayer(fly.trail);
+  document.getElementById('flyHud').classList.remove('show');
+  fly={raf:null};
+}
+function flyRoute(r){
+  stopFly();
+  const c=r.coords; if(!c||c.length<2) return;
+  const cum=[0]; for(let i=1;i<c.length;i++) cum[i]=cum[i-1]+map.distance(c[i-1],c[i]);
+  const total=cum[c.length-1]; if(!total) return;
+  const dur=Math.min(35000,Math.max(10000,total/1000*350));
+  document.getElementById('drawer').classList.remove('open');
+  map.fitBounds(L.latLngBounds(c).pad(0.15));
+  fly.mk=L.circleMarker(c[0],{radius:8,color:'#fff',weight:3,fillColor:r.color,fillOpacity:1,interactive:false}).addTo(map);
+  fly.trail=L.polyline([c[0]],{color:r.color,weight:5,opacity:.95,lineCap:'round'}).addTo(map);
+  const hud=document.getElementById('flyHud'), stat=document.getElementById('flyStat');
+  hud.classList.add('show');
+  const nm=r.name.split('(')[0].trim(), t0=performance.now();
+  let idx=0;
+  const step=now=>{
+    const f=Math.min(1,(now-t0)/dur), dist=f*total;
+    while(idx<c.length-2 && cum[idx+1]<dist) idx++;
+    const a=c[idx], b=c[Math.min(idx+1,c.length-1)];
+    const seg=(cum[Math.min(idx+1,c.length-1)]-cum[idx])||1;
+    const ff=Math.max(0,Math.min(1,(dist-cum[idx])/seg));
+    const pos=[a[0]+(b[0]-a[0])*ff, a[1]+(b[1]-a[1])*ff];
+    fly.mk.setLatLng(pos); fly.trail.addLatLng(pos);
+    stat.textContent=`${nm} — ${(dist/1000).toFixed(1)} / ${(total/1000).toFixed(1)} km`;
+    if(!map.getBounds().pad(-0.25).contains(pos)) map.panTo(pos);
+    if(f<1) fly.raf=requestAnimationFrame(step);
+    else { stat.textContent=`${nm} — ${(total/1000).toFixed(1)} km ✓`; fly.raf=null; setTimeout(()=>{if(!fly.raf)stopFly();},2200); }
+  };
+  fly.raf=requestAnimationFrame(step);
+}
+document.getElementById('flyStop').onclick=stopFly;
+
+document.getElementById('drawerClose').onclick=()=>{
+  document.getElementById('drawer').classList.remove('open');
+  stopFly();
+  history.replaceState(null,'',location.pathname+location.search);
+  activeRoute=null; clearRouteFromMap();
+  map.setView([37.74,-0.82],11);
+  // Return to whichever content view was active
+  const nav = currentView==='library'?'rides':currentView==='places'?'places':currentView==='community'?'community':'routes';
+  navigateTo(nav);
+};
+
+/* =========================================================================
+   GPX DOWNLOAD
+   ========================================================================= */
+function downloadGPX(r){
+  const pts=r.coords.map(c=>`      <trkpt lat="${c[0]}" lon="${c[1]}"></trkpt>`).join('\n');
+  const gpx=`<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="VELO Mar Menor" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata><name>${r.name}</name><desc>${r.summary}</desc></metadata>
+  <trk><name>${r.name}</name><type>${r.type}</type><trkseg>
+${pts}
+  </trkseg></trk>
+</gpx>`;
+  const blob=new Blob([gpx],{type:'application/gpx+xml'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=r.id+'.gpx';a.click();URL.revokeObjectURL(a.href);
+}
+
+/* =========================================================================
+   FILE PARSING
+   ========================================================================= */
+let _fitLibs=null;
+async function ensureFitLibs(){
+  if(_fitLibs)return _fitLibs;
+  const[fit,pako]=await Promise.all([
+    import('https://cdn.jsdelivr.net/npm/@garmin/fitsdk/+esm'),
+    import('https://cdn.jsdelivr.net/npm/pako@2/+esm')]);
+  _fitLibs={Decoder:fit.Decoder,Stream:fit.Stream,pako};return _fitLibs;
+}
+const SEMI=180/2147483648;
+async function parseFit(arrayBuffer){
+  const{Decoder,Stream,pako}=await ensureFitLibs();
+  let bytes=new Uint8Array(arrayBuffer);
+  if(bytes[0]===0x1f&&bytes[1]===0x8b)bytes=pako.ungzip(bytes);
+  const decoder=new Decoder(Stream.fromByteArray(bytes));
+  const{messages}=decoder.read();
+  const recs=messages.recordMesgs||[];
+  const coords=[],eles=[];let asc=0,prev=null;
+  for(const r of recs){
+    if(r.positionLat==null||r.positionLong==null)continue;
+    coords.push([r.positionLat*SEMI,r.positionLong*SEMI]);
+    const alt=(r.enhancedAltitude!=null?r.enhancedAltitude:r.altitude);
+    eles.push(alt!=null?alt:null);
+    if(alt!=null){if(prev!==null&&alt>prev)asc+=alt-prev;prev=alt;}
+  }
+  return{coords,ascent:asc,name:null,eles};
+}
+function parseGpxText(txt){
+  const xml=new DOMParser().parseFromString(txt,'application/xml');
+  let pts=[...xml.getElementsByTagName('trkpt')];
+  if(!pts.length)pts=[...xml.getElementsByTagName('rtept')];
+  const coords=[],eles=[];
+  for(const p of pts){
+    const la=parseFloat(p.getAttribute('lat')),lo=parseFloat(p.getAttribute('lon'));
+    if(isNaN(la))continue; coords.push([la,lo]);
+    const e=p.getElementsByTagName('ele')[0];
+    eles.push(e?parseFloat(e.textContent):null);
+  }
+  return{coords,ascent:ascentFromPts(pts),name:(xml.getElementsByTagName('name')[0]||{}).textContent||null,eles};
+}
+async function coordsFromFile(name,getText,getBuffer){
+  const lower=name.toLowerCase();
+  if(lower.endsWith('.fit')||lower.endsWith('.fit.gz')||lower.endsWith('.gz'))
+    return parseFit(await getBuffer());
+  return parseGpxText(await getText());
+}
+
+/* =========================================================================
+   GPX / FIT UPLOAD
+   ========================================================================= */
+document.getElementById('uploadBtn').onclick=()=>document.getElementById('gpxInput').click();
+document.getElementById('gpxInput').onchange=async e=>{
+  const f=e.target.files[0]; if(!f)return;
+  showNote('Reading '+f.name+'...');
+  try{
+    const{coords}=await coordsFromFile(f.name,()=>f.text(),()=>f.arrayBuffer());
+    if(!coords||!coords.length){showNote('No track points found.');return;}
+    if(uploadedLayer)map.removeLayer(uploadedLayer);
+    uploadedLayer=L.polyline(coords,{color:'#EC4899',weight:4,dashArray:'1,8',lineCap:'round'}).addTo(map);
+    map.fitBounds(uploadedLayer.getBounds().pad(0.15));
+    showNote(`Loaded <b>${f.name}</b> — ${coords.length} points, ~${trackLength(coords).toFixed(1)} km`);
+  }catch(err){showNote('Could not read that file: '+(err.message||err));}
+  e.target.value='';
+};
+function trackLength(c){let d=0;for(let i=1;i<c.length;i++)d+=map.distance(c[i-1],c[i]);return d/1000;}
+
+function showNote(html){
+  const n=document.getElementById('notify');
+  n.innerHTML=html;n.classList.add('show');
+  clearTimeout(n._t);n._t=setTimeout(()=>n.classList.remove('show'),5000);
+}
+
+/* =========================================================================
+   NAVIGATION — single source of truth for all view switching
+   ========================================================================= */
+let currentNav = 'home';
+
+function navigateTo(nav){
+  currentNav = nav;
+  stopFly();
+  history.replaceState(null,'',location.pathname+location.search);
+  const sidebar = document.getElementById('sidebar');
+  const drawer = document.getElementById('drawer');
+
+  // Update header nav active states
+  document.querySelectorAll('#headerNav .nav-item').forEach(n=>n.classList.toggle('active',n.dataset.nav===nav));
+  // Update bottom nav active states
+  document.querySelectorAll('#bottomNav .bnav-item').forEach(n=>n.classList.toggle('active',n.dataset.nav===nav));
+
+  // Close drawer when switching sections
+  drawer.classList.remove('open');
+  activeRoute=null; clearRouteFromMap();
+
+  if(nav==='home'){
+    setLanding(true);
+    sidebar.classList.add('hidden');
+  } else if(nav==='map'){
+    setLanding(false);
+    sidebar.classList.add('hidden');
+  } else {
+    setLanding(false);
+    sidebar.classList.remove('hidden');
+    if(nav==='routes') currentView='routes';
+    else if(nav==='rides') currentView='library';
+    else if(nav==='places') currentView='places';
+    else if(nav==='community') currentView='community';
+    renderSidebar();
+  }
+}
+
+// Header nav
+document.querySelectorAll('#headerNav .nav-item').forEach(n=>n.onclick=()=>navigateTo(n.dataset.nav));
+// Bottom nav
+document.querySelectorAll('#bottomNav .bnav-item').forEach(n=>n.onclick=()=>navigateTo(n.dataset.nav));
+
+/* =========================================================================
+   FILTER CONTROLS
+   ========================================================================= */
+document.querySelectorAll('#typeChips .filter-chip').forEach(c=>c.onclick=()=>{
+  const t=c.dataset.type;typeFilter[t]=!typeFilter[t];c.classList.toggle('active');renderSidebar();
+});
+document.querySelectorAll('#timeChips .filter-chip').forEach(c=>c.onclick=()=>{
+  document.querySelectorAll('#timeChips .filter-chip').forEach(x=>x.classList.remove('active'));
+  c.classList.add('active');timeFilter=c.dataset.time;renderSidebar();
+});
+
+document.getElementById('searchInput').addEventListener('input',e=>{
+  searchQuery=e.target.value.trim();renderSidebar();
+});
+
+document.querySelectorAll('#sortChips .filter-chip').forEach(c=>c.onclick=()=>{
+  document.querySelectorAll('#sortChips .filter-chip').forEach(x=>x.classList.remove('active'));
+  c.classList.add('active');sortBy=c.dataset.sort;renderSidebar();
+});
+document.getElementById('favChip').onclick=()=>{
+  favOnly=!favOnly;
+  document.getElementById('favChip').classList.toggle('active',favOnly);
+  renderSidebar();
+};
+document.getElementById('heatMapBtn').onclick=()=>toggleHeat();
+
+/* Map style toggle */
+document.getElementById('mapStyleBtn').onclick=()=>{
+  document.getElementById('mapStyles').classList.toggle('open');
+};
+document.querySelectorAll('.style-btn').forEach(btn=>btn.onclick=()=>{
+  const style=btn.dataset.style; if(style===currentTileLayer)return;
+  map.removeLayer(TILE_LAYERS[currentTileLayer]);
+  TILE_LAYERS[style].addTo(map);currentTileLayer=style;
+  document.querySelectorAll('.style-btn').forEach(b=>b.classList.toggle('active',b.dataset.style===style));
+  document.getElementById('mapStyles').classList.remove('open');
+});
+document.getElementById('map').addEventListener('click',()=>{
+  document.getElementById('mapStyles').classList.remove('open');
+});
+
+/* POI legend */
+const legend=document.getElementById('legend');
+Object.entries(POI_CATS).forEach(([k,c])=>{
+  const pill=document.createElement('button');pill.className='legend-pill';pill.dataset.cat=k;
+  pill.innerHTML=`<span class="ldot" style="background:${c.color}"></span>${c.label}`;
+  pill.onclick=()=>{const off=pill.classList.toggle('off');off?map.removeLayer(poiLayers[k]):map.addLayer(poiLayers[k]);};
+  legend.appendChild(pill);
+});
+
+/* Landing quick-actions */
+document.getElementById('wExplore').onclick=()=>navigateTo('routes');
+document.getElementById('wMap').onclick=()=>navigateTo('map');
+document.getElementById('wAllRoutes').onclick=()=>navigateTo('routes');
+document.getElementById('wLib').onclick=()=>navigateTo('routes');
+document.getElementById('wPlaces').onclick=()=>navigateTo('places');
+document.getElementById('wCommunity').onclick=()=>navigateTo('community');
+document.getElementById('wMap2').onclick=()=>navigateTo('map');
+
+document.getElementById('resetBtn').onclick=()=>{
+  map.setView([37.74,-0.82],11);
+  document.getElementById('drawer').classList.remove('open');
+  if(uploadedLayer){map.removeLayer(uploadedLayer);uploadedLayer=null;}
+  activeRoute=null;clearRouteFromMap();navigateTo('home');
+};
+
+
+/* =========================================================================
+   AUTO-IMPORT
+   ========================================================================= */
+function ascentFromPts(pts){
+  let asc=0,prev=null;
+  for(const p of pts){
+    const e=p.getElementsByTagName('ele')[0];
+    if(e){const v=parseFloat(e.textContent);if(!isNaN(v)){if(prev!==null&&v>prev)asc+=v-prev;prev=v;}}
+  }
+  return asc;
+}
+async function loadImported(){
+  let list=null;
+  try{const res=await fetch('routes/manifest.json',{cache:'no-store'});if(res.ok)list=await res.json();}catch(e){}
+  if(!list){ // file:// — use the pre-decoded ride snapshot instead of FIT parsing
+    try{await loadScript('routes/rides.js');}catch(e){}
+    const snap=window.RIDES_DATA;
+    if(Array.isArray(snap)&&snap.length){
+      for(const it of snap){
+        if(ROUTES.find(r=>r.id===it.id))continue;
+        ROUTES.push({...it, imported:true, stops:[], coords:it.pts.map(p=>[p[0],p[1]]), pts:undefined});
+      }
+      renderSidebar(); buildLanding();
+      showNote(`Loaded <b>${snap.length}</b> of your rides (offline snapshot).`);
+    }
+    return;
+  }
+  if(!Array.isArray(list)||!list.length)return;
+  let added=0,merged=0;const seen=new Map();
+  for(const item of list){
+    if(!item||!item.file)continue;
+    try{
+      const g=await fetch('routes/'+encodeURIComponent(item.file),{cache:'no-store'});if(!g.ok)continue;
+      const parsed=await coordsFromFile(item.file,()=>g.text(),()=>g.arrayBuffer());
+      const coords=parsed.coords;if(!coords||coords.length<2)continue;
+      const dist=trackLength(coords);const asc=Math.round(parsed.ascent);
+      const elev=buildElevProfile(coords,parsed.eles);const type=item.type||'road';const gpxName=parsed.name;
+      const s=coords[0],ee=coords[coords.length-1];
+      const gp=(la,lo)=>Math.round(la*100)/100+','+Math.round(lo*100)/100;
+      const sig=(Math.round(dist/2)*2)+'|'+gp(s[0],s[1])+'|'+gp(ee[0],ee[1])+'|'+Math.round(asc/75);
+      if(seen.has(sig)){const o=seen.get(sig);o.riddenCount=(o.riddenCount||1)+1;merged++;continue;}
+      const ro={
+        id:'imp-'+item.file.replace(/[^a-z0-9]/gi,''),
+        name:item.name||gpxName||item.file.replace(/\.gpx$/i,''),
+        type, time:item.time||(dist<18?'1':dist<35?'2':'day'),
+        dist:Math.round(dist), ascent:asc,
+        diff:item.diff||(asc>800?'Hard':asc>300?'Moderate':'Easy'),
+        surfaceTxt:item.surface||'Imported GPX track',
+        summary:item.summary||'Your recorded ride, imported from GPX.',
+        desc:item.desc||'Imported from your GPX file — track, distance and elevation are read straight from the real recording.',
+        color:type==='gravel'?'#D97706':type==='path'?'#059669':'#3B82F6',
+        stops:item.stops||[], source:item.source||'', imported:true, riddenCount:1, coords, elev,
+        year:(m=>m?parseInt(m[1]):null)(item.file.match(/^(20\d\d)/))
+      };
+      ROUTES.push(ro);seen.set(sig,ro);added++;
+    }catch(e){}
+  }
+  if(added){renderSidebar();buildLanding();showNote(`Imported <b>${added}</b> route${added>1?'s':''}${merged?` (merged ${merged} repeat${merged>1?'s':''})`:''}.`);}
+}
+
+/* =========================================================================
+   CURATED GEOMETRY (routes/curated.json)
+   Real road-following tracks: overrides the approximate corridors of the
+   built-in routes and adds the cycling-friendly.com San Javier routes.
+   ========================================================================= */
+function loadScript(src){return new Promise((ok,err)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=err;document.head.appendChild(s);});}
+
+async function loadCurated(){
+  try{
+    let list=null;
+    try{const res=await fetch('routes/curated.json',{cache:'no-store'}); if(res.ok) list=await res.json();}catch(e){}
+    if(!list){ // file:// — fetch is blocked; fall back to the script snapshot
+      try{await loadScript('routes/curated.js');}catch(e){}
+      list=window.CURATED_DATA;
+    }
+    if(!Array.isArray(list))return;
+    for(const it of list){
+      if(!it||!it.pts||it.pts.length<2)continue;
+      const coords=it.pts.map(p=>[p[0],p[1]]);
+      const eles=it.pts.map(p=>p[2]);
+      const elev=buildElevProfile(coords,eles);
+      const ex=ROUTES.find(r=>r.id===it.id);
+      if(ex){
+        ex.coords=coords; ex.elev=elev;
+        if(it.dist)ex.dist=it.dist;
+        if(it.ascent!=null)ex.ascent=it.ascent;
+        if(it.time)ex.time=it.time;
+      } else {
+        ROUTES.push({id:it.id, name:it.name, type:it.type||'road', time:it.time||'2',
+          dist:it.dist, ascent:it.ascent, diff:it.diff||'Moderate',
+          surfaceTxt:it.surfaceTxt||'', summary:it.summary||'', desc:it.desc||'',
+          color:it.color||'#3B82F6', stops:it.stops||[], source:it.source||'', coords, elev});
+      }
+    }
+    renderSidebar(); buildLanding();
+  }catch(e){}
+}
+
+/* =========================================================================
+   LIVE RIDING CONDITIONS (Open-Meteo, no API key)
+   ========================================================================= */
+const WMO={0:['☀️','Clear sky'],1:['🌤️','Mostly clear'],2:['⛅','Partly cloudy'],3:['☁️','Overcast'],
+  45:['🌫️','Fog'],48:['🌫️','Fog'],51:['🌦️','Light drizzle'],53:['🌦️','Drizzle'],55:['🌧️','Heavy drizzle'],
+  61:['🌦️','Light rain'],63:['🌧️','Rain'],65:['🌧️','Heavy rain'],66:['🌧️','Freezing rain'],67:['🌧️','Freezing rain'],
+  71:['🌨️','Snow'],73:['🌨️','Snow'],75:['❄️','Heavy snow'],77:['🌨️','Snow grains'],
+  80:['🌦️','Showers'],81:['🌧️','Showers'],82:['⛈️','Heavy showers'],85:['🌨️','Snow showers'],86:['🌨️','Snow showers'],
+  95:['⛈️','Thunderstorm'],96:['⛈️','Thunderstorm'],99:['⛈️','Thunderstorm']};
+const wmo=c=>WMO[c]||['🌤️',''];
+const compass=d=>['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(d/22.5)%16];
+const windArrow=(d,size)=>`<svg class="wx-arrow" width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor" style="transform:rotate(${(d+180)%360}deg)"><path d="M12 2l6 18-6-4.5L6 20z"/></svg>`;
+function rideScore(wind,rainP,tmax){
+  let s=10;
+  if(wind>40)s-=5; else if(wind>30)s-=3; else if(wind>20)s-=1.5;
+  if(rainP>70)s-=4; else if(rainP>40)s-=2; else if(rainP>20)s-=1;
+  if(tmax>38)s-=3; else if(tmax>34)s-=1.5;
+  if(tmax<8)s-=2; else if(tmax<12)s-=1;
+  return s>=8.5?['Epic day','ride-great']:s>=6.5?['Good','ride-good']:s>=4.5?['Fair','ride-fair']:['Tough','ride-tough'];
+}
+async function loadWeather(){
+  try{
+    const u='https://api.open-meteo.com/v1/forecast?latitude=37.7985&longitude=-0.8085'
+      +'&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m'
+      +'&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant,sunrise,sunset'
+      +'&timezone=Europe%2FMadrid&forecast_days=7';
+    const d=await(await fetch(u)).json();
+    const c=d.current, dy=d.daily;
+    if(!c||!dy) return;
+    const [ico,txt]=wmo(c.weather_code);
+    const [scoreTxt,scoreCls]=rideScore(c.wind_speed_10m,dy.precipitation_probability_max[0]||0,dy.temperature_2m_max[0]);
+    const rise=dy.sunrise[0].slice(11), set=dy.sunset[0].slice(11);
+    const WX_ES={'Clear sky':'Despejado','Mostly clear':'Casi despejado','Partly cloudy':'Parcialmente nublado','Overcast':'Cubierto','Fog':'Niebla','Light drizzle':'Llovizna ligera','Drizzle':'Llovizna','Heavy drizzle':'Llovizna fuerte','Light rain':'Lluvia ligera','Rain':'Lluvia','Heavy rain':'Lluvia fuerte','Freezing rain':'Lluvia helada','Snow':'Nieve','Heavy snow':'Nieve fuerte','Snow grains':'Granos de nieve','Showers':'Chubascos','Heavy showers':'Chubascos fuertes','Snow showers':'Chubascos de nieve','Thunderstorm':'Tormenta'};
+    const txtL = LANG==='es' ? (WX_ES[txt]||txt) : txt;
+    document.getElementById('wxCur').innerHTML=`
+      <div>
+        <div class="wx-temp"><span class="wx-ico">${ico}</span>${Math.round(c.temperature_2m)}&deg;</div>
+        <div class="wx-desc">${txtL} &middot; ${TR('feels like','sensación de')} ${Math.round(c.apparent_temperature)}&deg;
+          <span class="ride">${scoreLabel(scoreTxt)} ${TR('for riding','para rodar')}</span></div>
+      </div>
+      <div class="wx-facts">
+        <div class="wx-fact"><div class="n">${windArrow(c.wind_direction_10m,13)} ${Math.round(c.wind_speed_10m)}</div><div class="k">km/h ${compass(c.wind_direction_10m)}</div></div>
+        <div class="wx-fact"><div class="n">${Math.round(c.wind_gusts_10m)}</div><div class="k">${TR('Gusts km/h','Rachas km/h')}</div></div>
+        <div class="wx-fact"><div class="n">${dy.precipitation_probability_max[0]!=null?dy.precipitation_probability_max[0]:0}%</div><div class="k">${TR('Rain today','Lluvia hoy')}</div></div>
+        <div class="wx-fact"><div class="n">${rise}</div><div class="k">${TR('Sunrise','Amanecer')}</div></div>
+        <div class="wx-fact"><div class="n">${set}</div><div class="k">${TR('Sunset','Atardecer')}</div></div>
+      </div>`;
+    const days=LANG==='es'?['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    document.getElementById('wxDays').innerHTML=dy.time.map((t,i)=>{
+      const dt=new Date(t+'T12:00');
+      const [di]=wmo(dy.weather_code[i]);
+      const [rTxt,rCls]=rideScore(dy.wind_speed_10m_max[i],dy.precipitation_probability_max[i]||0,dy.temperature_2m_max[i]);
+      return `<div class="wx-day">
+        <div class="d">${i===0?TR('Today','Hoy'):days[dt.getDay()]}</div>
+        <div class="i">${di}</div>
+        <div class="t">${Math.round(dy.temperature_2m_max[i])}&deg; <span>${Math.round(dy.temperature_2m_min[i])}&deg;</span></div>
+        <div class="w">${windArrow(dy.wind_direction_10m_dominant[i],10)} ${Math.round(dy.wind_speed_10m_max[i])}</div>
+        <div class="ride ${rCls}">${scoreLabel(rTxt)}</div>
+      </div>`;
+    }).join('');
+    document.getElementById('wxUpdated').textContent='Santiago de la Ribera · '+TR('updated','actualizado')+' '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('wxSection').style.display='';
+    const pill=document.getElementById('wxPill');
+    pill.innerHTML=`<span>${ico} ${Math.round(c.temperature_2m)}&deg;</span><span class="sep"></span>
+      <span style="display:flex;align-items:center;gap:5px">${windArrow(c.wind_direction_10m,12)} ${Math.round(c.wind_speed_10m)} km/h ${compass(c.wind_direction_10m)}</span>`;
+    pill.classList.add('show');
+  }catch(e){ /* offline or blocked — weather section stays hidden */ }
+}
+
+/* =========================================================================
+   DEEP LINKS  (#route=<id>)
+   ========================================================================= */
+function applyHash(){
+  const m=location.hash.match(/^#route=(.+)$/);
+  if(!m) return;
+  const id=decodeURIComponent(m[1]);
+  if(ROUTES.find(r=>r.id===id)) openRoute(id);
+}
+
+/* =========================================================================
+   INIT
+   ========================================================================= */
+applyLang(); renderSidebar(); buildLanding(); navigateTo('home');
+Promise.all([loadImported(), loadCurated()]).then(applyHash);
+loadWeather();
+setInterval(loadWeather, 30*60*1000);
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    const drawer=document.getElementById('drawer');
+    if(drawer.classList.contains('open')){
+      document.getElementById('drawerClose').click();
+    } else if(currentNav!=='home'){
+      navigateTo('home');
+    }
+  }
+});
+
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').then(()=>{
+      navigator.serviceWorker.ready.then(()=>showNote('Offline ready — routes, photos & map tiles cached.'));
+    }).catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
