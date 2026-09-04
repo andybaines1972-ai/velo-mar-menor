@@ -1113,6 +1113,15 @@ const POIS = [
    desc:'4-star superior hotel with direct beach access between two sandy beaches. Pool, spa, tennis court and restaurant.',
    tags:['4-star','Beachfront','Pool','Spa'], url:'https://www.servigroup.com/en/la-zenia-hotel-orihuela-costa/'},
   // ---- SANTIAGO DE LA RIBERA (new) ----
+  {id:'la-liada', cat:'food', name:'Bar Tapería La Liada', lat:37.7992, lng:-0.8094,
+   desc:'The local favourite tapería on Calle Muñoz — home-cooked tapas and seafood, ice-cold beer and famously fast, friendly service. Croquetas, octopus and the mustard chicken are the ones to order. Rated 4.8 on 1,300+ reviews; always packed, so book ahead.',
+   tags:['Tapas','Seafood','Local favourite','Book ahead'], url:'https://www.facebook.com/TaperiaLaLiada/'},
+  {id:'la-plaza', cat:'food', name:'Pizzería Restaurante La Plaza', lat:37.7986, lng:-0.8101,
+   desc:'On Plaza Segura in the heart of town — homemade pizzas, fresh pasta and meats in a cosy, welcoming setting. Ranked #3 of 39 in Santiago de la Ribera and a reliable, good-value family favourite.',
+   tags:['Pizza','Pasta','Family-friendly','Central'], url:'https://www.tripadvisor.com/Restaurant_Review-g2305759-d6945035-Reviews-Pizzeria_Restaurante_La_Plaza_Ribera-Santiago_de_la_Ribera.html'},
+  {id:'paseo-chiringuitos', cat:'food', name:'Paseo chiringuitos (beach bars)', lat:37.7988, lng:-0.8074,
+   desc:'The string of beach bars and terraces along the Explanada Barnuevo & Paseo Colón — the classic Santiago de la Ribera ritual: a cold drink, tapas and a plate of fresh fish with your feet almost in the Mar Menor. The go-to pre- or post-ride stop right on the seafront.',
+   tags:['Beach bars','Terrace','Seafront','Drinks & tapas'], url:''},
   {id:'embarcadero', cat:'food', name:'El Embarcadero de la Ribera', lat:37.7975, lng:-0.8065,
    desc:'Mediterranean restaurant on the Paseo Colon promenade with outdoor seating overlooking the Mar Menor. Tapas and rice dishes.',
    tags:['Seafood','Tapas','Terrace','Seafront'], url:'https://elembarcaderolaribera.es/'},
@@ -1324,7 +1333,8 @@ const ROUTE_PHOTO={
  'cf-cresta':'viewpoint-flag','cf-ferry-road':'la-manga','cf-ferry-mtb':'encanizadas',
  'cf-rebate':'cyclist-paseo','cf-salinas':'lopagan-bike','cf-castillitos':'cartagena-bike',
  'campo-loop':'bull-cyclist','launion-road':'mining-selfie','losnietos':'hero-marmenor',
- 'avileses-loop':'cyclist-paseo','ricote-epic':'viewpoint-flag','pilar-easy':'paseo-bike'
+ 'avileses-loop':'cyclist-paseo','ricote-epic':'viewpoint-flag','pilar-easy':'paseo-bike',
+ 'vuelta-2026-s11':'cartagena-bike'
 };
 const POI_PHOTO={
  lovelo:'coffee',paseo:'santiago-ribera',lopagan:'hero-marmenor','cabo-food':'cabo-de-palos',
@@ -1353,6 +1363,7 @@ const POI_PHOTO={
  'taberna-caboroig':'hero-marmenor','rest-caboroig':'hero-marmenor',
  'bike-experience':'cycling','lammertink':'cycling','ropa-cycling':'cycling',
  'sendero-azul':'cabo-bike','servigroup':'hero-marmenor',
+ 'la-liada':'paseo-beer','la-plaza':'cyclist-paseo','paseo-chiringuitos':'santiago-sunset',
  'embarcadero':'paseo-beer','miramar-rib':'santiago-bike','el-marino':'santiago-bike',
  'la-lonja':'santiago-bike','pez-rojo':'paseo-beer','heladeria-jijona':'santiago-sunset',
  'montesinos':'santiago-bike','roots-coffee':'santiago-bike',
@@ -1932,7 +1943,7 @@ function buildLanding(){
       requestAnimationFrame(tick);
     });
   }
-  const feat=['cabo-coastal','lovelo-canal','cf-cresta','paseo-loop','cf-castillitos','viaverde'].map(id=>ROUTES.find(r=>r.id===id)).filter(Boolean);
+  const feat=['vuelta-2026-s11','cabo-coastal','lovelo-canal','cf-cresta','cf-castillitos','viaverde'].map(id=>ROUTES.find(r=>r.id===id)).filter(Boolean);
   const lf=document.getElementById('lFeat');
   if(lf){lf.innerHTML=feat.map(r=>{
     const ph=ROUTE_PHOTO[r.id]; const img=ph?`<img src="assets/${ph}.jpg" alt="" loading="lazy">`:'';
