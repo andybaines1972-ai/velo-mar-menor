@@ -421,6 +421,24 @@ img{display:block;max-width:100%}
 .wx-pill.show{display:flex}
 .wx-pill .sep{width:1px;height:14px;background:var(--gray-200)}
 
+/* ===== WIND PICKS ===== */
+.wind-head{font-size:13px;color:var(--gray-600);margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;line-height:1.5}
+.wind-head b{color:var(--gray-900)}
+.wind-head .wx-arrow{color:var(--accent)}
+.wind-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.wind-card{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--r-lg);padding:14px 15px;cursor:pointer;transition:all .18s}
+.wind-card:hover{border-color:var(--gray-300);box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.wind-card h4{font-size:14.5px;font-weight:600;margin-bottom:5px;line-height:1.25}
+.wind-card .wc-meta{font-size:12px;color:var(--gray-500);margin-bottom:9px;display:flex;gap:10px}
+.w-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px}
+.w-great{background:rgba(5,150,105,.12);color:var(--easy)}
+.w-good{background:rgba(13,148,136,.12);color:var(--teal)}
+.w-fair{background:rgba(217,119,6,.12);color:var(--moderate)}
+.w-tough{background:rgba(220,38,38,.1);color:var(--hard)}
+.d-wind{display:flex;align-items:center;gap:10px;margin:-4px 0 16px;padding:10px 14px;border-radius:var(--r);
+  background:var(--gray-50);border:1px solid var(--gray-200);font-size:13px;font-weight:500}
+.d-wind .w-badge{margin-left:auto;flex:none}
+
 /* ===== INTERACTIVE ELEVATION ===== */
 .de-frame{position:relative;cursor:crosshair}
 .de-hover{position:absolute;top:6px;bottom:6px;width:1.5px;background:var(--gray-500);opacity:0;pointer-events:none}
@@ -501,15 +519,18 @@ img{display:block;max-width:100%}
   .featured-grid{grid-template-columns:1fr 1fr}
   .highlights{grid-template-columns:1fr}
   .info-grid{grid-template-columns:1fr}
-  .drawer{top:auto;left:0;right:0;bottom:0;width:auto;max-height:55vh;
+  .drawer{position:fixed;top:auto;left:0;right:0;bottom:58px;width:auto;
+    max-height:min(64vh,calc(100dvh - 130px));
     border-radius:var(--r-xl) var(--r-xl) 0 0;border-left:none;border-top:1px solid var(--gray-200);
-    box-shadow:0 -8px 30px rgba(0,0,0,.1);transform:translateY(105%)}
+    box-shadow:0 -8px 30px rgba(0,0,0,.16);transform:translateY(140%);
+    overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
   .drawer.open{transform:translateY(0)}
   .handle-bar{display:block}
   .map-legend{bottom:120px}
   .notification{bottom:70px}
   .dash{grid-template-columns:1fr 1fr}
   .comm-strip{grid-template-columns:1fr 1fr}
+  .wind-grid{grid-template-columns:1fr}
   .view-title h2{font-size:19px}
   .wx-cur{padding:16px 18px}
   .wx-temp{font-size:34px}
@@ -652,6 +673,7 @@ img{display:block;max-width:100%}
           <h2 class="drawer-title" id="dTitle"></h2>
           <div class="drawer-sub" id="dSub"></div>
           <div class="drawer-stats" id="dStats"></div>
+          <div class="d-wind" id="dWind" hidden></div>
           <div class="drawer-elev" id="dElev"></div>
           <div class="drawer-desc" id="dDesc"></div>
           <div class="drawer-stops"><div class="section-label">Stops & highlights along the way</div><div id="dStops"></div></div>
@@ -717,6 +739,15 @@ img{display:block;max-width:100%}
           </div>
           <div class="wx-cur" id="wxCur"></div>
           <div class="wx-days" id="wxDays"></div>
+        </div>
+
+        <div class="landing-section" id="windSection" style="display:none">
+          <div class="section-header">
+            <h2 id="windH2">Best routes for today's wind</h2>
+            <button class="link-btn" id="wWindAll">All routes &rarr;</button>
+          </div>
+          <div class="wind-head" id="windHead"></div>
+          <div class="wind-grid" id="windGrid"></div>
         </div>
 
         <div class="landing-section">
@@ -1424,6 +1455,8 @@ const I18N_STATIC = [
  ['.highlights .hl:nth-child(3) b','Traffic-free greenways','Vías verdes sin tráfico'],
  ['.highlights .hl:nth-child(3) p','Via Verde del Campo de Cartagena + coastal promenades','Vía Verde del Campo de Cartagena + paseos marítimos'],
  ['#wxSection h2','Riding conditions','Condiciones para rodar'],
+ ['#windH2',"Best routes for today's wind",'Mejores rutas para el viento de hoy'],
+ ['#wWindAll','All routes →','Todas las rutas →'],
  ['#featH2','Featured routes','Rutas destacadas'],
  ['#commH2','Community & events','Comunidad y eventos'],
  ['#planH2','Plan your trip','Planifica tu viaje'],
@@ -1946,6 +1979,7 @@ function openRoute(id){
     attachElevHover(elEl.querySelector('.de-frame'), r);
   } else {elEl.style.display='none';elEl.innerHTML='';}
 
+  fillWind(r);
   document.getElementById('dDesc').textContent=r.desc;
   const stopsEl=document.getElementById('dStops'); stopsEl.innerHTML='';
   const orp=onRoutePOIs(r);
@@ -2274,6 +2308,7 @@ document.getElementById('wAllRoutes').onclick=()=>navigateTo('routes');
 document.getElementById('wLib').onclick=()=>navigateTo('routes');
 document.getElementById('wPlaces').onclick=()=>navigateTo('places');
 document.getElementById('wCommunity').onclick=()=>navigateTo('community');
+document.getElementById('wWindAll').onclick=()=>navigateTo('routes');
 document.getElementById('wMap2').onclick=()=>navigateTo('map');
 
 document.getElementById('resetBtn').onclick=()=>{
@@ -2402,6 +2437,76 @@ function rideScore(wind,rainP,tmax){
   if(tmax<8)s-=2; else if(tmax<12)s-=1;
   return s>=8.5?['Epic day','ride-great']:s>=6.5?['Good','ride-good']:s>=4.5?['Fair','ride-fair']:['Tough','ride-tough'];
 }
+/* =========================================================================
+   WIND-AWARE ROUTE PICKS — cyclists care most about the wind
+   ========================================================================= */
+let WX=null;  // {dir (from°), speed, gusts}
+function bearing(a,b){
+  const toR=Math.PI/180, la1=a[0]*toR, la2=b[0]*toR, dLon=(b[1]-a[1])*toR;
+  const y=Math.sin(dLon)*Math.cos(la2);
+  const x=Math.cos(la1)*Math.sin(la2)-Math.sin(la1)*Math.cos(la2)*Math.cos(dLon);
+  return (Math.atan2(y,x)*180/Math.PI+360)%360;
+}
+function windForRoute(r){
+  if(!WX||!r.coords||r.coords.length<4) return null;
+  const windTo=(WX.dir+180)%360;             // direction the wind pushes a rider
+  const c=r.coords, cum=[0];
+  for(let i=1;i<c.length;i++) cum[i]=cum[i-1]+map.distance(c[i-1],c[i]);
+  const total=cum[c.length-1]||1;
+  const step=Math.max(1,Math.floor(c.length/400));
+  let net=0,head=0,tail=0,homeNum=0,homeDen=0;
+  for(let i=step;i<c.length;i+=step){
+    const seg=map.distance(c[i-step],c[i]); if(!seg) continue;
+    let diff=Math.abs(bearing(c[i-step],c[i])-windTo)%360; if(diff>180)diff=360-diff;
+    const assist=Math.cos(diff*Math.PI/180);  // +1 tailwind … −1 headwind
+    net+=assist*seg;
+    if(assist<-0.5) head+=seg; else if(assist>0.5) tail+=seg;
+    if(cum[i]/total>0.7){ homeNum+=assist*seg; homeDen+=seg; }
+  }
+  const homeA=homeDen?homeNum/homeDen:0, headFrac=head/total, tailFrac=tail/total;
+  const strong=WX.speed>=8;
+  let score=50+homeA*35+(net/total)*10-Math.max(0,headFrac-0.35)*45;
+  return {homeA, headFrac, tailFrac, strong, score:Math.max(0,Math.min(100,Math.round(score)))};
+}
+function windLabel(w){
+  if(!w) return null;
+  if(!w.strong) return {t:TR('Light winds','Viento flojo'), cls:'w-good'};
+  if(w.homeA>0.3) return {t:TR('Tailwind home','A favor al volver'), cls:'w-great'};
+  if(w.homeA<-0.35) return {t:TR('Headwind finish','En contra al final'), cls:'w-tough'};
+  if(w.headFrac>0.45) return {t:TR('Windy both ways','Viento en ambos sentidos'), cls:'w-tough'};
+  if(w.tailFrac>0.4 && w.headFrac<0.3) return {t:TR('Wind mostly helping','Viento a favor'), cls:'w-good'};
+  return {t:TR('Crosswinds','Viento de costado'), cls:'w-fair'};
+}
+function fillWind(r){
+  const wEl=document.getElementById('dWind'); if(!wEl) return;
+  const w=windForRoute(r);
+  if(w){ const lab=windLabel(w);
+    wEl.hidden=false;
+    wEl.innerHTML=`${windArrow(WX.dir,15)}<span>${TR('Wind','Viento')}: ${Math.round(WX.speed)} km/h ${compass(WX.dir)}</span><span class="w-badge ${lab.cls}">${lab.t}</span>`;
+  } else wEl.hidden=true;
+}
+function renderWindPicks(){
+  const sec=document.getElementById('windSection'); if(!sec) return;
+  if(!WX||!ROUTES.length){ sec.style.display='none'; return; }
+  const scored=ROUTES.filter(r=>!r.imported&&r.coords&&r.coords.length>3)
+    .map(r=>({r,w:windForRoute(r)})).filter(x=>x.w);
+  if(!scored.length){ sec.style.display='none'; return; }
+  scored.sort((a,b)=>b.w.score-a.w.score);
+  const dirTxt=compass(WX.dir);
+  document.getElementById('windHead').innerHTML = WX.speed>=8
+    ? `${TR('Right now','Ahora mismo')}: ${windArrow(WX.dir,14)} <b>${Math.round(WX.speed)} km/h ${TR('from the','del')} ${dirTxt}</b>. ${TR('These ride best today','Estas van mejor hoy')}:`
+    : `${TR('Winds are light','Viento flojo')} (${windArrow(WX.dir,13)} ${Math.round(WX.speed)} km/h ${dirTxt}) — ${TR('almost any route rides well','casi cualquier ruta va bien')}:`;
+  document.getElementById('windGrid').innerHTML = scored.slice(0,3).map(({r,w})=>{
+    const lab=windLabel(w);
+    return `<div class="wind-card" data-id="${r.id}">
+      <h4>${r.name.split('(')[0].trim()}</h4>
+      <div class="wc-meta"><span><b>${r.dist}</b> km</span><span>&uarr; ${r.ascent} m</span><span>${typeLabel(r.type)}</span></div>
+      <span class="w-badge ${lab.cls}">${lab.t}</span></div>`;
+  }).join('');
+  document.querySelectorAll('#windGrid .wind-card').forEach(c=>c.onclick=()=>openRoute(c.dataset.id));
+  sec.style.display='';
+}
+
 async function loadWeather(){
   try{
     const u='https://api.open-meteo.com/v1/forecast?latitude=37.7985&longitude=-0.8085'
@@ -2411,6 +2516,7 @@ async function loadWeather(){
     const d=await(await fetch(u)).json();
     const c=d.current, dy=d.daily;
     if(!c||!dy) return;
+    WX={dir:c.wind_direction_10m, speed:c.wind_speed_10m, gusts:c.wind_gusts_10m};
     const [ico,txt]=wmo(c.weather_code);
     const [scoreTxt,scoreCls]=rideScore(c.wind_speed_10m,dy.precipitation_probability_max[0]||0,dy.temperature_2m_max[0]);
     const rise=dy.sunrise[0].slice(11), set=dy.sunset[0].slice(11);
@@ -2448,6 +2554,8 @@ async function loadWeather(){
     pill.innerHTML=`<span>${ico} ${Math.round(c.temperature_2m)}&deg;</span><span class="sep"></span>
       <span style="display:flex;align-items:center;gap:5px">${windArrow(c.wind_direction_10m,12)} ${Math.round(c.wind_speed_10m)} km/h ${compass(c.wind_direction_10m)}</span>`;
     pill.classList.add('show');
+    renderWindPicks();
+    if(activeRoute){ const ar=ROUTES.find(x=>x.id===activeRoute); if(ar) fillWind(ar); }
   }catch(e){ /* offline or blocked — weather section stays hidden */ }
 }
 
@@ -2465,7 +2573,7 @@ function applyHash(){
    INIT
    ========================================================================= */
 applyLang(); renderSidebar(); buildLanding(); navigateTo('home');
-Promise.all([loadImported(), loadCurated()]).then(applyHash);
+Promise.all([loadImported(), loadCurated()]).then(()=>{ applyHash(); renderWindPicks(); });
 loadWeather();
 setInterval(loadWeather, 30*60*1000);
 
