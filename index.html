@@ -200,6 +200,13 @@ img{display:block;max-width:100%}
 .map-btn:hover{background:var(--gray-50);color:var(--gray-900);box-shadow:var(--shadow)}
 .map-btn svg{width:18px;height:18px}
 .map-btn.accent{background:var(--accent);color:var(--white);border-color:var(--accent)}
+.map-btn.locating svg{animation:spin 1s linear infinite}
+.map-btn.located{background:#2563EB;color:#fff;border-color:#2563EB}
+@keyframes spin{to{transform:rotate(360deg)}}
+.rc-dist,.place-dist{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;
+  color:#2563EB;background:rgba(37,99,235,.09);border-radius:999px;padding:2px 8px}
+.filter-chip#nearChip.active{background:#2563EB;border-color:#2563EB}
+.place-dist{margin-left:auto;flex:none;align-self:flex-start}
 .map-btn.accent:hover{background:var(--accent-hover)}
 .map-styles{position:absolute;top:12px;right:60px;z-index:100;background:var(--white);
   border:1px solid var(--gray-200);border-radius:var(--r);box-shadow:var(--shadow-md);
@@ -611,6 +618,7 @@ img{display:block;max-width:100%}
         <div class="panel-divider"></div>
         <div class="filter-chips" id="sortChips">
           <button class="filter-chip active" data-sort="featured">Featured</button>
+          <button class="filter-chip" data-sort="near" id="nearChip">&#128205; Near me</button>
           <button class="filter-chip" data-sort="dist">Longest</button>
           <button class="filter-chip" data-sort="climb">Hilliest</button>
         </div>
@@ -637,6 +645,9 @@ img{display:block;max-width:100%}
         </button>
         <button class="map-btn" id="heatMapBtn" title="Show all your rides">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22c4.4 0 8-3.6 8-8 0-5-4-8-5.5-11C13 6 9 6.5 9 10c-1.5-1-2-2.5-2-4-2 2-3 5-3 8 0 4.4 3.6 8 8 8z"/></svg>
+        </button>
+        <button class="map-btn" id="locateBtn" title="Find routes & places near me">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg>
         </button>
         <button class="map-btn" id="resetBtn" title="Reset view">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
@@ -1476,6 +1487,7 @@ const I18N_STATIC = [
  ['#sortChips [data-sort="dist"]','Longest','Más largas'],
  ['#sortChips [data-sort="climb"]','Hilliest','Con más subida'],
  ['#favChip','★ Saved','★ Guardadas'],
+ ['#nearChip','📍 Near me','📍 Cerca de mí'],
  ['.info-grid .info-card:nth-child(1) h5','Getting here','Cómo llegar'],
  ['.info-grid .info-card:nth-child(2) h5','Bikes to your door','Bicis a domicilio'],
  ['.info-grid .info-card:nth-child(3) h5','Best time to ride','La mejor época'],
@@ -1514,6 +1526,41 @@ document.getElementById('langBtn').onclick=()=>{
   if(activeRoute) openRoute(activeRoute);
 };
 
+/* =========================================================================
+   GEOLOCATION — "near me" (stays in the browser, never sent anywhere)
+   ========================================================================= */
+let USER_POS=null, userMarker=null;
+const fmtDist=m => m<950 ? Math.round(m/10)*10+' m' : (m/1000).toFixed(m<9500?1:0)+' km';
+function nearestOnRoute(r){
+  if(!USER_POS||!r.coords||!r.coords.length) return null;
+  let best=Infinity; const step=Math.max(1,Math.floor(r.coords.length/300));
+  for(let i=0;i<r.coords.length;i+=step){ const d=map.distance(USER_POS,r.coords[i]); if(d<best)best=d; }
+  return best;
+}
+function userIcon(){ return L.divIcon({className:'',html:
+  `<div style="width:18px;height:18px;border-radius:50%;background:#2563EB;border:3px solid #fff;box-shadow:0 0 0 3px rgba(37,99,235,.3),0 1px 5px rgba(0,0,0,.4)"></div>`,
+  iconSize:[18,18],iconAnchor:[9,9]}); }
+function locateMe(then){
+  const btn=document.getElementById('locateBtn');
+  if(!navigator.geolocation||!location.protocol.startsWith('http')){
+    showNote(TR('Location needs the online (https) version — open the site link, not the local file.','La ubicación necesita la versión online (https).')); return;
+  }
+  btn.classList.add('locating');
+  navigator.geolocation.getCurrentPosition(p=>{
+    btn.classList.remove('locating'); btn.classList.add('located');
+    USER_POS=[p.coords.latitude,p.coords.longitude];
+    if(userMarker) userMarker.setLatLng(USER_POS);
+    else userMarker=L.marker(USER_POS,{icon:userIcon(),zIndexOffset:1000,interactive:true}).addTo(map).bindPopup(TR('You are here','Estás aquí'));
+    const near=[...ROUTES].filter(r=>!r.imported).map(r=>({r,d:nearestOnRoute(r)})).filter(x=>x.d!=null).sort((a,b)=>a.d-b.d)[0];
+    showNote(near?`${TR('Location set','Ubicación fijada')} — ${TR('nearest route','ruta más cercana')}: <b>${near.r.name.split('(')[0].trim()}</b> (${fmtDist(near.d)})`:TR('Location set.','Ubicación fijada.'));
+    renderSidebar();
+    if(then) then();
+  }, err=>{
+    btn.classList.remove('locating');
+    showNote(err.code===1?TR('Location permission denied.','Permiso de ubicación denegado.'):TR('Could not find your location.','No se pudo obtener tu ubicación.'));
+  }, {enableHighAccuracy:true, timeout:10000, maximumAge:60000});
+}
+
 function visibleRoutes(){
   let rs = ROUTES.filter(r=> typeFilter[r.type] && (timeFilter==='all' || r.time===timeFilter));
   if(favOnly) rs = rs.filter(r=> FAVS.has(r.id));
@@ -1523,6 +1570,7 @@ function visibleRoutes(){
   }
   if(sortBy==='dist') rs = [...rs].sort((a,b)=>b.dist-a.dist);
   else if(sortBy==='climb') rs = [...rs].sort((a,b)=>b.ascent-a.ascent);
+  else if(sortBy==='near'&&USER_POS) rs = [...rs].sort((a,b)=>(nearestOnRoute(a)??1e12)-(nearestOnRoute(b)??1e12));
   return rs;
 }
 function showRouteOnMap(r){
@@ -1719,6 +1767,7 @@ function renderRouteList(el,rc){
         <h3>${r.name}</h3>
         <div class="rc-badges">
           ${r.imported?`<span class="badge b-yours">${TR('Your ride','Tu salida')}</span>`:''}${ridBadge(r)}
+          ${USER_POS?`<span class="rc-dist">&#128205; ${fmtDist(nearestOnRoute(r))} ${TR('away','')}</span>`:''}
         </div>
         <div class="rc-meta">
           <span><b>${r.dist}</b> km</span>
@@ -1838,7 +1887,8 @@ function renderPlaces(el,rc){
   }
   if(rc) rc.textContent=`${filteredPois.length} ${TR(filteredPois.length>1?'places':'place', filteredPois.length>1?'lugares':'lugar')}`;
   Object.entries(POI_CATS).forEach(([cat,c])=>{
-    const items=filteredPois.filter(p=>p.cat===cat); if(!items.length) return;
+    let items=filteredPois.filter(p=>p.cat===cat); if(!items.length) return;
+    if(USER_POS) items=[...items].sort((a,b)=>map.distance(USER_POS,[a.lat,a.lng])-map.distance(USER_POS,[b.lat,b.lng]));
     const hdr=document.createElement('div'); hdr.className='place-group-header';
     hdr.innerHTML=`<span class="ldot" style="width:8px;height:8px;border-radius:50%;background:${c.color};display:inline-block"></span>${catLabel(cat)} (${items.length})`;
     el.appendChild(hdr);
@@ -1849,7 +1899,8 @@ function renderPlaces(el,rc){
       const thumb=ph?`<img class="place-img" src="assets/${ph}.jpg" alt="" loading="lazy">`
         :`<div class="place-icon" style="background:${c.color}">${catSvg(cat,17)}</div>`;
       const tags=(p.tags||[]).map(t=>`<span class="place-tag">${t}</span>`).join('');
-      card.innerHTML=`${thumb}<div style="min-width:0"><b>${p.name}</b>${link}<div class="place-desc">${p.desc}</div>${tags?`<div class="place-tags">${tags}</div>`:''}</div>`;
+      const dist=USER_POS?`<span class="place-dist">&#128205; ${fmtDist(map.distance(USER_POS,[p.lat,p.lng]))}</span>`:'';
+      card.innerHTML=`${thumb}<div style="min-width:0;flex:1"><div style="display:flex;gap:8px"><b style="flex:1">${p.name}${link}</b>${dist}</div><div class="place-desc">${p.desc}</div>${tags?`<div class="place-tags">${tags}</div>`:''}</div>`;
       card.onclick=()=>{if(!map.hasLayer(poiLayers[cat]))map.addLayer(poiLayers[cat]);map.setView([p.lat,p.lng],14);poiLayers[cat].eachLayer(l=>{if(Math.abs(l.getLatLng().lat-p.lat)<1e-6)l.openPopup();});navigateTo('map');};
       el.appendChild(card);
     });
@@ -2265,8 +2316,9 @@ document.getElementById('searchInput').addEventListener('input',e=>{
 });
 
 document.querySelectorAll('#sortChips .filter-chip').forEach(c=>c.onclick=()=>{
-  document.querySelectorAll('#sortChips .filter-chip').forEach(x=>x.classList.remove('active'));
-  c.classList.add('active');sortBy=c.dataset.sort;renderSidebar();
+  const setActive=()=>{document.querySelectorAll('#sortChips .filter-chip').forEach(x=>x.classList.remove('active'));c.classList.add('active');};
+  if(c.dataset.sort==='near' && !USER_POS){ sortBy='near'; locateMe(setActive); setActive(); return; }
+  setActive(); sortBy=c.dataset.sort; renderSidebar();
 });
 document.getElementById('favChip').onclick=()=>{
   favOnly=!favOnly;
@@ -2274,6 +2326,7 @@ document.getElementById('favChip').onclick=()=>{
   renderSidebar();
 };
 document.getElementById('heatMapBtn').onclick=()=>toggleHeat();
+document.getElementById('locateBtn').onclick=()=>{ locateMe(()=>{ if(USER_POS) map.setView(USER_POS, Math.max(map.getZoom(),12)); }); };
 
 /* Map style toggle */
 document.getElementById('mapStyleBtn').onclick=()=>{
