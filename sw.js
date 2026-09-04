@@ -1,9 +1,9 @@
 /* VÉLO Mar Menor — offline service worker
    Caches the app shell, your route data (manifest + FIT files), the map/FIT
    libraries, and map tiles you've viewed, so the hub works offline. */
-const SHELL = 'velo-shell-v13';
-const TILES = 'velo-tiles-v1';
-const RUNTIME = 'velo-rt-v13';
+const SHELL = 'velo-shell-v14';
+const TILES = 'velo-tiles-v2';
+const RUNTIME = 'velo-rt-v14';
 
 const SHELL_URLS = [
   './', 'index.html', 'manifest.webmanifest',
@@ -74,7 +74,7 @@ self.addEventListener('fetch', e => {
   }
 
   // Map tiles: cache-first into a dedicated tile cache (offline for viewed areas).
-  if (url.hostname.endsWith('cartocdn.com')) {
+  if (/(arcgisonline\.com|cartocdn\.com|opentopomap\.org|openstreetmap\.(org|fr)|tile-cyclosm)/.test(url.hostname)) {
     e.respondWith((async () => {
       const c = await caches.open(TILES);
       const hit = await c.match(req);
