@@ -1,9 +1,9 @@
 /* VÉLO Mar Menor — offline service worker
    Caches the app shell, your route data (manifest + FIT files), the map/FIT
    libraries, and map tiles you've viewed, so the hub works offline. */
-const SHELL = 'velo-shell-v19';
+const SHELL = 'velo-shell-v20';
 const TILES = 'velo-tiles-v2';
-const RUNTIME = 'velo-rt-v19';
+const RUNTIME = 'velo-rt-v20';
 
 const SHELL_URLS = [
   './', 'index.html', 'manifest.webmanifest',
