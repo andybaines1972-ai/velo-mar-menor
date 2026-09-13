@@ -10,11 +10,11 @@
 <meta property="og:description" content="25 real cycling routes with elevation profiles, 90+ cafés, bike shops & stays, live riding conditions — the cycling hub for the Mar Menor. Free, installable, works offline.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://velo-mar-menor.vercel.app/">
-<meta property="og:image" content="https://velo-mar-menor.vercel.app/assets/hero-marmenor.jpg">
+<meta property="og:image" content="https://velo-mar-menor.vercel.app/assets/hero-bike.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="VÉLO Mar Menor — Cycling Murcia & the Costa Cálida">
 <meta name="twitter:description" content="25 real cycling routes, cafés, bike hire, live riding conditions — the cycling hub for the Mar Menor.">
-<meta name="twitter:image" content="https://velo-mar-menor.vercel.app/assets/hero-marmenor.jpg">
+<meta name="twitter:image" content="https://velo-mar-menor.vercel.app/assets/hero-bike.jpg">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -108,7 +108,7 @@ img{display:block;max-width:100%}
 .bottom-nav{display:none}
 
 /* ===== CONTENT PANEL (replaces sidebar) ===== */
-.sidebar{position:absolute;inset:0;z-index:50;background:var(--gray-50);overflow-y:auto;
+.sidebar{position:absolute;inset:0;z-index:150;background:var(--gray-50);overflow-y:auto;
   transition:opacity .3s,visibility .3s}
 .sidebar.hidden{opacity:0;visibility:hidden;pointer-events:none}
 .panel-header{background:var(--white);border-bottom:1px solid var(--gray-200);
@@ -716,7 +716,8 @@ img{display:block;max-width:100%}
 
     <div class="landing" id="landing">
       <div class="hero">
-        <img src="assets/hero-marmenor.jpg" alt="Sunrise over the Mar Menor" class="hero-img">
+        <img src="assets/hero-boats.jpg" alt="The Mar Menor at Santiago de la Ribera" class="hero-img" id="heroImg">
+        <script>(function(){var h=['hero-boats','hero-bike'],i=document.getElementById('heroImg');if(i)i.src='assets/'+h[Math.floor(Math.random()*h.length)]+'.jpg';})();</script>
         <div class="hero-overlay"></div>
         <div class="hero-content">
           <div class="hero-eyebrow">Costa Calida &middot; Region de Murcia</div>
@@ -1131,6 +1132,19 @@ const POIS = [
   {id:'apartamentos-pagan', cat:'stay', name:'Apartamentos Pagán', lat:37.7989, lng:-0.8083,
    desc:'Self-catering apartments a minute from Playa de Barnuevo, 80 m from the Mar Menor. Air-conditioned, with terraces and free WiFi — flexible base right on the seafront, good for longer cycling stays.',
    tags:['Apartments','Self-catering','Near beach','Seafront'], url:'https://www.apartamentospagan.es/'},
+  // ---- LA PEDRERA / SAN MIGUEL DE SALINAS / TORREMENDO (reservoir loop) ----
+  {id:'la-parada', cat:'food', name:'La Parada', lat:37.9790, lng:-0.7876,
+   desc:'Family bar, restaurant and bistro in the heart of San Miguel de Salinas — a friendly, good-value stop for breakfast, coffee or a proper feed at the start or end of the reservoir loop.',
+   tags:['Bar & bistro','Breakfast','Family-run','Good value'], url:'https://www.facebook.com/laparadasanmiguel/'},
+  {id:'cave-cafe', cat:'coffee', name:'Cave Café BistroBar', lat:37.9801, lng:-0.7862,
+   desc:'Quirky bistro-bar set in the historic cave district of San Miguel de Salinas. Good coffee, cake and cooked breakfasts in a one-of-a-kind setting — a great inland coffee stop.',
+   tags:['Coffee','Breakfast','Cave setting','Cake'], url:'https://www.facebook.com/p/Cave-Caf%C3%A9-BistroBar-61563844351911/'},
+  {id:'el-toro-carvery', cat:'food', name:'El Toro Carvery', lat:37.9905, lng:-0.8095,
+   desc:'Roadside carvery and restaurant on the CV-951 between San Miguel de Salinas and Torremendo — right on the reservoir loop. Hearty plates and a welcome mid-ride refuel.',
+   tags:['Carvery','Restaurant','On the loop','Hearty'], url:''},
+  {id:'torremendo-bar', cat:'coffee', name:'Torremendo village bar', lat:37.9950, lng:-0.8378,
+   desc:'The local bar in the little village of Torremendo, tucked beside the Embalse de la Pedrera. A cold drink, a café con leche and a tapa in the quiet village square — the classic turnaround of the reservoir loop.',
+   tags:['Village bar','Café con leche','By the reservoir','Quiet'], url:''},
   {id:'embarcadero', cat:'food', name:'El Embarcadero de la Ribera', lat:37.7975, lng:-0.8065,
    desc:'Mediterranean restaurant on the Paseo Colon promenade with outdoor seating overlooking the Mar Menor. Tapas and rice dishes.',
    tags:['Seafood','Tapas','Terrace','Seafront'], url:'https://elembarcaderolaribera.es/'},
@@ -1343,7 +1357,7 @@ const ROUTE_PHOTO={
  'cf-rebate':'cyclist-paseo','cf-salinas':'lopagan-bike','cf-castillitos':'cartagena-bike',
  'campo-loop':'bull-cyclist','launion-road':'mining-selfie','losnietos':'hero-marmenor',
  'avileses-loop':'cyclist-paseo','ricote-epic':'viewpoint-flag','pilar-easy':'paseo-bike',
- 'vuelta-2026-s11':'cartagena-bike'
+ 'vuelta-2026-s11':'cartagena-bike','pedrera-loop':'viewpoint-flag'
 };
 const POI_PHOTO={
  lovelo:'coffee',paseo:'santiago-ribera',lopagan:'hero-marmenor','cabo-food':'cabo-de-palos',
@@ -1374,6 +1388,7 @@ const POI_PHOTO={
  'sendero-azul':'cabo-bike','servigroup':'hero-marmenor',
  'la-liada':'paseo-beer','la-plaza':'cyclist-paseo','paseo-chiringuitos':'santiago-sunset',
  'sabor-urbano':'paseo-beer','hotel-madrid':'santiago-bike','apartamentos-pagan':'santiago-ribera',
+ 'la-parada':'paseo-beer','cave-cafe':'coffee','el-toro-carvery':'bull-cyclist','torremendo-bar':'viewpoint-flag',
  'embarcadero':'paseo-beer','miramar-rib':'santiago-bike','el-marino':'santiago-bike',
  'la-lonja':'santiago-bike','pez-rojo':'paseo-beer','heladeria-jijona':'santiago-sunset',
  'montesinos':'santiago-bike','roots-coffee':'santiago-bike',

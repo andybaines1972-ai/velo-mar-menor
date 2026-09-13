@@ -1,9 +1,9 @@
 /* VÉLO Mar Menor — offline service worker
    Caches the app shell, your route data (manifest + FIT files), the map/FIT
    libraries, and map tiles you've viewed, so the hub works offline. */
-const SHELL = 'velo-shell-v18';
+const SHELL = 'velo-shell-v19';
 const TILES = 'velo-tiles-v2';
-const RUNTIME = 'velo-rt-v18';
+const RUNTIME = 'velo-rt-v19';
 
 const SHELL_URLS = [
   './', 'index.html', 'manifest.webmanifest',
@@ -12,7 +12,7 @@ const SHELL_URLS = [
   'https://cdn.jsdelivr.net/npm/@garmin/fitsdk/+esm',
   'https://cdn.jsdelivr.net/npm/pako@2/+esm',
   'assets/icon.svg', 'assets/icon-192.png', 'assets/icon-512.png', 'assets/apple-touch-icon.png',
-  'assets/hero-marmenor.jpg', 'assets/cabo-de-palos.jpg', 'assets/cartagena.jpg',
+  'assets/hero-boats.jpg', 'assets/hero-bike.jpg', 'assets/hero-marmenor.jpg', 'assets/cabo-de-palos.jpg', 'assets/cartagena.jpg',
   'assets/la-manga.jpg', 'assets/santiago-ribera.jpg', 'assets/cycling.jpg', 'assets/coffee.jpg',
   'routes/manifest.json', 'routes/curated.json'
 ];
