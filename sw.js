@@ -1,14 +1,14 @@
 /* VÉLO Mar Menor — offline service worker
    Caches the app shell, your route data (manifest + FIT files), the map/FIT
    libraries, and map tiles you've viewed, so the hub works offline. */
-const SHELL = 'velo-shell-v22';
+const SHELL = 'velo-shell-v23';
 const TILES = 'velo-tiles-v2';
-const RUNTIME = 'velo-rt-v22';
+const RUNTIME = 'velo-rt-v23';
 
 const SHELL_URLS = [
   './', 'index.html', 'manifest.webmanifest',
   'assets/vendor/leaflet.css',
-  'assets/vendor/leaflet.js',
+  'assets/vendor/leaflet.js', 'assets/vendor/supabase.js', 'assets/velo-config.js',
   'https://cdn.jsdelivr.net/npm/@garmin/fitsdk/+esm',
   'https://cdn.jsdelivr.net/npm/pako@2/+esm',
   'assets/icon.svg', 'assets/icon-192.png', 'assets/icon-512.png', 'assets/apple-touch-icon.png',
@@ -44,8 +44,8 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // Live weather: always go to the network, never cache (stale forecasts are worse than none).
-  if (url.hostname === 'api.open-meteo.com') return;
+  // Live weather + Supabase (suggestions/auth): always network, never cache.
+  if (url.hostname === 'api.open-meteo.com' || url.hostname.endsWith('supabase.co')) return;
 
   // App navigations: network-first (fresh updates), fall back to cached shell offline.
   if (req.mode === 'navigate') {

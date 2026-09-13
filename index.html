@@ -26,6 +26,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/vendor/leaflet.css">
 <script src="assets/vendor/leaflet.js"></script>
+<script src="assets/vendor/supabase.js"></script>
+<script src="assets/velo-config.js"></script>
 <script>
 window.__errs=[];
 window.addEventListener('error',e=>{window.__errs.push((e.message||'?')+' @'+(e.lineno||0));
@@ -446,6 +448,41 @@ img{display:block;max-width:100%}
   background:var(--gray-50);border:1px solid var(--gray-200);font-size:13px;font-weight:500}
 .d-wind .w-badge{margin-left:auto;flex:none}
 
+/* ===== SUGGEST-A-PLACE MODAL ===== */
+.sg-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;border-radius:var(--r);
+  font-size:13px;font-weight:600;background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(249,115,22,.3);transition:all .15s}
+.sg-btn:hover{background:var(--accent-hover);transform:translateY(-1px)}
+.sg-btn svg{width:16px;height:16px}
+.sg-btn.ghost{background:var(--white);color:var(--gray-700);border:1px solid var(--gray-200);box-shadow:var(--shadow-xs)}
+.sg-btn.ghost:hover{background:var(--gray-50)}
+.modal-scrim{position:fixed;inset:0;z-index:1200;background:rgba(15,23,42,.55);display:none;
+  align-items:center;justify-content:center;padding:16px}
+.modal-scrim.open{display:flex}
+.modal{background:var(--white);border-radius:var(--r-xl);box-shadow:var(--shadow-lg);
+  max-width:520px;width:100%;max-height:92dvh;overflow-y:auto}
+.modal-head{display:flex;align-items:center;gap:10px;padding:18px 20px 6px}
+.modal-head h3{font-family:var(--font-d);text-transform:uppercase;letter-spacing:.02em;font-size:21px;flex:1}
+.modal-close{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:var(--gray-500);flex:none;font-size:20px}
+.modal-close:hover{background:var(--gray-100)}
+.modal-sub{padding:0 20px;font-size:12.5px;color:var(--gray-500);line-height:1.5}
+.modal-body{padding:8px 20px 20px}
+.modal-body label{display:block;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--gray-500);margin:13px 0 4px}
+.modal-body input,.modal-body select,.modal-body textarea{width:100%;padding:10px 12px;border:1px solid var(--gray-200);
+  border-radius:var(--r);font-size:14px;background:var(--gray-50);color:var(--gray-900);font-family:inherit}
+.modal-body input:focus,.modal-body select:focus,.modal-body textarea:focus{border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-ring);outline:none;background:#fff}
+.modal-body textarea{resize:vertical;min-height:60px}
+.sg-map{height:190px;border-radius:var(--r);overflow:hidden;border:1px solid var(--gray-200);margin-top:4px}
+.sg-hint{font-size:11.5px;color:var(--gray-400);margin-top:5px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sg-hint a{cursor:pointer;font-weight:600}
+.sg-row{display:flex;gap:10px}
+.sg-row>div{flex:1;min-width:0}
+.modal-actions{display:flex;gap:8px;margin-top:18px}
+.modal-actions .btn{flex:1}
+.sg-msg{font-size:13px;padding:10px 12px;border-radius:var(--r);margin-top:12px;display:none;line-height:1.45}
+.sg-msg.ok{display:block;background:rgba(5,150,105,.1);color:var(--easy)}
+.sg-msg.err{display:block;background:rgba(220,38,38,.1);color:var(--hard)}
+
 /* ===== INTERACTIVE ELEVATION ===== */
 .de-frame{position:relative;cursor:crosshair}
 .de-hover{position:absolute;top:6px;bottom:6px;width:1.5px;background:var(--gray-500);opacity:0;pointer-events:none}
@@ -830,6 +867,56 @@ img{display:block;max-width:100%}
       </div>
     </div>
   </div>
+  <div class="modal-scrim" id="sgScrim">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Suggest a place">
+      <div class="modal-head">
+        <h3 id="sgTitle">Suggest a place</h3>
+        <button class="modal-close" id="sgClose" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-sub" id="sgSub">Know a great café, bike shop or spot we're missing? Add it here — it goes to a review queue, not straight onto the map.</div>
+      <div class="modal-body">
+        <div class="sg-row">
+          <div>
+            <label for="sgCat">Type</label>
+            <select id="sgCat">
+              <option value="coffee">Coffee stop</option>
+              <option value="food">Food &amp; drink</option>
+              <option value="hire">Bike hire / shop</option>
+              <option value="stay">Accommodation</option>
+              <option value="view">Landmark / viewpoint</option>
+            </select>
+          </div>
+          <div>
+            <label for="sgName">Name</label>
+            <input id="sgName" maxlength="120" placeholder="e.g. Bar La Fuente">
+          </div>
+        </div>
+        <label for="sgDesc">What's good about it?</label>
+        <textarea id="sgDesc" maxlength="1200" placeholder="Great coffee and cake, bike racks, opens early…"></textarea>
+        <div class="sg-row">
+          <div><label for="sgTags">Tags <span style="font-weight:400;text-transform:none">(optional, commas)</span></label>
+            <input id="sgTags" maxlength="200" placeholder="Specialty coffee, Breakfast"></div>
+          <div><label for="sgUrl">Website <span style="font-weight:400;text-transform:none">(optional)</span></label>
+            <input id="sgUrl" maxlength="300" placeholder="https://…"></div>
+        </div>
+        <label>Where is it? <span style="font-weight:400;text-transform:none">Drag the pin, or</span></label>
+        <div class="sg-map" id="sgMap"></div>
+        <div class="sg-hint"><a id="sgLocate">📍 Use my location</a> <span id="sgCoords" style="color:var(--gray-400)"></span></div>
+        <div class="sg-row">
+          <div><label for="sgWho">Your name <span style="font-weight:400;text-transform:none">(optional)</span></label>
+            <input id="sgWho" maxlength="80" placeholder="So we can credit you"></div>
+          <div><label for="sgContact">Email <span style="font-weight:400;text-transform:none">(optional)</span></label>
+            <input id="sgContact" maxlength="160" placeholder="If we need to check"></div>
+        </div>
+        <div class="sg-msg" id="sgMsg"></div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" id="sgCancel">Cancel</button>
+          <button class="btn btn-primary" id="sgSubmit">Send suggestion</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <nav class="bottom-nav" id="bottomNav">
     <button class="bnav-item active" data-nav="home">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
@@ -1921,6 +2008,11 @@ function toggleHeat(){
 function renderPlaces(el,rc){
   el.className='places-grid';
   el.innerHTML='';
+  const sgBar=document.createElement('div');
+  sgBar.style.cssText='grid-column:1/-1;display:flex;justify-content:flex-end;margin:-4px 0 2px';
+  sgBar.innerHTML=`<button class="sg-btn" id="placesSuggest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>${TR('Suggest a place','Sugerir un lugar')}</button>`;
+  el.appendChild(sgBar);
+  sgBar.querySelector('#placesSuggest').onclick=()=>openSuggest();
   let filteredPois = POIS;
   if(searchQuery){
     const q=searchQuery.toLowerCase();
@@ -2090,6 +2182,10 @@ function openRoute(id){
     stopsEl.appendChild(div);
   });
   if(!orp.length) stopsEl.innerHTML=`<div style="color:var(--gray-400);font-size:12.5px">${TR('No cafés or landmarks catalogued near this route yet.','Aún no hay cafés ni lugares catalogados cerca de esta ruta.')}</div>`;
+  const sgLink=document.createElement('div'); sgLink.style.cssText='margin-top:12px';
+  sgLink.innerHTML=`<button class="sg-btn ghost" id="drawerSuggest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>${TR('Know a stop we’re missing? Suggest it','¿Falta una parada? Sugiérela')}</button>`;
+  stopsEl.appendChild(sgLink);
+  sgLink.querySelector('#drawerSuggest').onclick=()=>openSuggest();
 
   document.getElementById('dGpx').onclick=()=>downloadGPX(r);
   document.getElementById('dFly').onclick=()=>flyRoute(r);
@@ -2652,6 +2748,63 @@ async function loadWeather(){
     if(activeRoute){ const ar=ROUTES.find(x=>x.id===activeRoute); if(ar) fillWind(ar); }
   }catch(e){ /* offline or blocked — weather section stays hidden */ }
 }
+
+/* =========================================================================
+   SUGGEST A PLACE  → Supabase review queue (visitors can't edit the live site)
+   ========================================================================= */
+let SB=null;
+try{ if(window.VELO_SUPABASE && window.supabase) SB=window.supabase.createClient(VELO_SUPABASE.url, VELO_SUPABASE.key); }catch(e){}
+let sgMap=null, sgMarker=null;
+function updateSgCoords(){ if(!sgMarker)return; const ll=sgMarker.getLatLng();
+  document.getElementById('sgCoords').textContent=ll.lat.toFixed(4)+', '+ll.lng.toFixed(4); }
+function openSuggest(){
+  const scrim=document.getElementById('sgScrim');
+  scrim._routeContext = activeRoute ? ((ROUTES.find(r=>r.id===activeRoute)||{}).name||'') : '';
+  document.getElementById('sgMsg').className='sg-msg';
+  scrim.classList.add('open');
+  const c = USER_POS ? L.latLng(USER_POS[0],USER_POS[1]) : (typeof map!=='undefined'?map.getCenter():L.latLng(37.80,-0.81));
+  setTimeout(()=>{
+    if(!sgMap){
+      sgMap=L.map('sgMap',{zoomControl:true,attributionControl:false}).setView(c,14);
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,maxNativeZoom:16}).addTo(sgMap);
+      sgMarker=L.marker(c,{draggable:true}).addTo(sgMap);
+      sgMarker.on('move',updateSgCoords);
+      sgMap.on('click',e=>{sgMarker.setLatLng(e.latlng);updateSgCoords();});
+    } else { sgMap.setView(c,14); sgMarker.setLatLng(c); }
+    sgMap.invalidateSize(); updateSgCoords();
+  },70);
+}
+function closeSuggest(){ document.getElementById('sgScrim').classList.remove('open'); }
+async function submitSuggest(){
+  const msg=document.getElementById('sgMsg'); msg.className='sg-msg';
+  const name=document.getElementById('sgName').value.trim();
+  const ll=sgMarker?sgMarker.getLatLng():null;
+  if(!name){ msg.className='sg-msg err'; msg.textContent=TR('Please add a name.','Añade un nombre.'); return; }
+  if(!ll){ msg.className='sg-msg err'; msg.textContent=TR('Please set the location on the map.','Marca la ubicación en el mapa.'); return; }
+  if(!SB){ msg.className='sg-msg err'; msg.textContent=TR('Suggestions need the online version — open the site link.','Las sugerencias necesitan la versión online.'); return; }
+  const btn=document.getElementById('sgSubmit'); btn.disabled=true; btn.textContent=TR('Sending…','Enviando…');
+  const row={ category:document.getElementById('sgCat').value, name,
+    description:document.getElementById('sgDesc').value.trim()||null,
+    tags:document.getElementById('sgTags').value.trim()||null,
+    url:document.getElementById('sgUrl').value.trim()||null,
+    lat:+ll.lat.toFixed(6), lng:+ll.lng.toFixed(6),
+    route_context:document.getElementById('sgScrim')._routeContext||null,
+    submitter_name:document.getElementById('sgWho').value.trim()||null,
+    submitter_contact:document.getElementById('sgContact').value.trim()||null };
+  let error=null;
+  try{ const r=await SB.from('place_suggestions').insert(row); error=r.error; }catch(e){ error=e; }
+  btn.disabled=false; btn.textContent=TR('Send suggestion','Enviar sugerencia');
+  if(error){ msg.className='sg-msg err'; msg.textContent=TR('Sorry, could not send: ','No se pudo enviar: ')+(error.message||error); return; }
+  msg.className='sg-msg ok'; msg.textContent=TR('Thank you! Your suggestion has been sent for review. 🙌','¡Gracias! Tu sugerencia se ha enviado para revisión. 🙌');
+  ['sgName','sgDesc','sgTags','sgUrl','sgWho','sgContact'].forEach(id=>document.getElementById(id).value='');
+  setTimeout(closeSuggest,1900);
+}
+document.getElementById('sgClose').onclick=closeSuggest;
+document.getElementById('sgCancel').onclick=closeSuggest;
+document.getElementById('sgSubmit').onclick=submitSuggest;
+document.getElementById('sgScrim').addEventListener('click',e=>{ if(e.target.id==='sgScrim') closeSuggest(); });
+document.getElementById('sgLocate').onclick=()=>{ if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p=>{
+  const ll=[p.coords.latitude,p.coords.longitude]; if(sgMarker){sgMarker.setLatLng(ll);sgMap.setView(ll,15);updateSgCoords();} }); };
 
 /* =========================================================================
    DEEP LINKS  (#route=<id>)
