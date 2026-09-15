@@ -483,6 +483,38 @@ img{display:block;max-width:100%}
 .sg-msg.ok{display:block;background:rgba(5,150,105,.1);color:var(--easy)}
 .sg-msg.err{display:block;background:rgba(220,38,38,.1);color:var(--hard)}
 
+/* ===== ROUTE PLANNER ===== */
+.map-btn.plan-on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.plan-panel{position:absolute;left:12px;bottom:12px;z-index:160;width:280px;max-width:calc(100vw - 24px);
+  background:var(--white);border:1px solid var(--gray-200);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);
+  padding:12px 13px;display:none;font-size:13px}
+.plan-panel.open{display:block}
+.plan-head{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.plan-head h4{font-family:var(--font-d);text-transform:uppercase;letter-spacing:.03em;font-size:16px;flex:1}
+.plan-head .pp-close{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:var(--gray-500);font-size:18px;cursor:pointer;flex:none}
+.plan-head .pp-close:hover{background:var(--gray-100)}
+.plan-surface{display:flex;gap:5px;margin-bottom:10px}
+.plan-surface button{flex:1;padding:6px 4px;border:1px solid var(--gray-200);border-radius:var(--r);background:var(--gray-50);
+  font:inherit;font-size:11.5px;font-weight:600;color:var(--gray-600);cursor:pointer;text-transform:capitalize}
+.plan-surface button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.plan-stats{display:flex;gap:6px;margin-bottom:9px}
+.plan-stats .ps{flex:1;background:var(--gray-50);border-radius:var(--r);padding:7px 4px;text-align:center}
+.plan-stats .ps b{display:block;font-family:var(--font-d);font-size:19px;line-height:1;color:var(--gray-900)}
+.plan-stats .ps span{font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray-400);font-weight:600}
+.plan-prof{height:46px;background:var(--gray-50);border-radius:var(--r);margin-bottom:9px;overflow:hidden}
+.plan-prof svg{display:block;width:100%;height:100%}
+.plan-hint{font-size:11px;color:var(--gray-400);line-height:1.4;margin-bottom:9px}
+.plan-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.plan-btns button{padding:8px 6px;border-radius:var(--r);font:inherit;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--gray-200);background:var(--white);color:var(--gray-700);display:flex;align-items:center;justify-content:center;gap:5px}
+.plan-btns button:hover:not(:disabled){background:var(--gray-50);border-color:var(--gray-300)}
+.plan-btns button:disabled{opacity:.4;cursor:default}
+.plan-btns button svg{width:14px;height:14px}
+.plan-btns .pp-submit{grid-column:1/3;background:var(--accent);color:#fff;border-color:var(--accent)}
+.plan-btns .pp-submit:hover:not(:disabled){background:var(--accent-hover)}
+.plan-wp{width:15px;height:15px;border-radius:50%;background:var(--white);border:3px solid var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.35);cursor:move}
+.plan-wp.start{background:var(--accent)}
+@media(max-width:640px){.plan-panel{left:8px;right:8px;bottom:76px;width:auto}}
+
 /* ===== INTERACTIVE ELEVATION ===== */
 .de-frame{position:relative;cursor:crosshair}
 .de-hover{position:absolute;top:6px;bottom:6px;width:1.5px;background:var(--gray-500);opacity:0;pointer-events:none}
@@ -685,10 +717,39 @@ img{display:block;max-width:100%}
         <button class="map-btn" id="locateBtn" title="Find routes & places near me">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg>
         </button>
+        <button class="map-btn" id="planBtn" title="Plan a route">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="5" r="2.4"/><path d="M8.2 17.8l2-3M12.4 11.6l1.5-2.2"/><path d="M15.6 7.4l.2-.3"/></svg>
+        </button>
         <button class="map-btn" id="resetBtn" title="Reset view">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
         </button>
         <input type="file" id="gpxInput" accept=".gpx,.fit,.gz" style="display:none">
+      </div>
+
+      <div class="plan-panel" id="planPanel">
+        <div class="plan-head">
+          <h4 id="ppTitle">Plan a route</h4>
+          <div class="pp-close" id="ppClose" aria-label="Close">&times;</div>
+        </div>
+        <div class="plan-surface" id="ppSurface">
+          <button data-prof="road" class="on">Road</button>
+          <button data-prof="gravel">Gravel</button>
+          <button data-prof="path">Path</button>
+        </div>
+        <div class="plan-stats">
+          <div class="ps"><b id="ppDist">0.0</b><span id="ppDistU">km</span></div>
+          <div class="ps"><b id="ppAsc">0</b><span>m climb</span></div>
+          <div class="ps"><b id="ppPts">0</b><span>points</span></div>
+        </div>
+        <div class="plan-prof" id="ppProf"><svg viewBox="0 0 280 46" preserveAspectRatio="none"></svg></div>
+        <div class="plan-hint" id="ppHint">Tap the map to drop points. Roads and paths are followed automatically. Drag a point to nudge it.</div>
+        <div class="plan-btns">
+          <button id="ppUndo" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-1"/></svg>Undo</button>
+          <button id="ppClear" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Clear</button>
+          <button id="ppGpx" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>GPX</button>
+          <button id="ppShare" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4M12 2v13"/></svg>Save</button>
+          <button class="pp-submit" id="ppSubmit" disabled>Submit to VÉLO</button>
+        </div>
       </div>
 
       <div class="map-styles" id="mapStyles">
@@ -911,6 +972,33 @@ img{display:block;max-width:100%}
         <div class="modal-actions">
           <button class="btn btn-secondary" id="sgCancel">Cancel</button>
           <button class="btn btn-primary" id="sgSubmit">Send suggestion</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-scrim" id="rpScrim">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>Submit your route</h3>
+        <button class="modal-close" id="rpClose" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-sub">Send your planned route to VÉLO. It goes to a review queue — once approved it can join the curated routes.</div>
+      <div class="modal-body">
+        <label for="rpName">Route name</label>
+        <input id="rpName" maxlength="120" placeholder="e.g. Coastal loop to Cabo de Palos">
+        <label for="rpNote">Notes <span style="font-weight:400;text-transform:none">(optional — surface, highlights, cafés)</span></label>
+        <textarea id="rpNote" maxlength="1000" placeholder="Quiet lanes, one gravel section by the salt flats, great coffee at the turn…"></textarea>
+        <div class="sg-row">
+          <div><label for="rpWho">Your name <span style="font-weight:400;text-transform:none">(optional)</span></label>
+            <input id="rpWho" maxlength="80" placeholder="So we can credit you"></div>
+          <div><label for="rpContact">Email <span style="font-weight:400;text-transform:none">(optional)</span></label>
+            <input id="rpContact" maxlength="160" placeholder="If we need to check"></div>
+        </div>
+        <div class="sg-msg" id="rpMsg"></div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" id="rpCancel">Cancel</button>
+          <button class="btn btn-primary" id="rpSubmit">Send route</button>
         </div>
       </div>
     </div>
@@ -2804,6 +2892,215 @@ document.getElementById('sgSubmit').onclick=submitSuggest;
 document.getElementById('sgScrim').addEventListener('click',e=>{ if(e.target.id==='sgScrim') closeSuggest(); });
 document.getElementById('sgLocate').onclick=()=>{ if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p=>{
   const ll=[p.coords.latitude,p.coords.longitude]; if(sgMarker){sgMarker.setLatLng(ll);sgMap.setView(ll,15);updateSgCoords();} }); };
+
+/* =========================================================================
+   ROUTE PLANNER  (tap-the-map, snap-to-road via BRouter, GPX + submit)
+   ========================================================================= */
+const PLAN_PROFILES = { road:'fastbike', gravel:'trekking', path:'safety' };
+let planActive=false, planProfile='road', planBusy=false;
+let planWpts=[], planMarkers=[], planLegs=[];   // legs[i] joins wpts[i]..wpts[i+1]
+let planLayer=null, planWpLayer=null;
+
+function planWpIcon(i){ return L.divIcon({className:'',
+  html:`<div class="plan-wp${i===0?' start':''}"></div>`, iconSize:[15,15], iconAnchor:[7.5,7.5]}); }
+
+function togglePlan(on){
+  planActive = (on===undefined) ? !planActive : on;
+  document.getElementById('planBtn').classList.toggle('plan-on', planActive);
+  const panel=document.getElementById('planPanel');
+  if(planActive){
+    if(!planLayer){ planLayer=L.layerGroup().addTo(map); planWpLayer=L.layerGroup().addTo(map); }
+    panel.classList.add('open');
+    map.getContainer().style.cursor='crosshair';
+  } else {
+    panel.classList.remove('open');
+    map.getContainer().style.cursor='';
+  }
+}
+
+async function brouterLeg(a,b){
+  const ll=`${a.lng.toFixed(6)},${a.lat.toFixed(6)}|${b.lng.toFixed(6)},${b.lat.toFixed(6)}`;
+  const url=`https://brouter.de/brouter?lonlats=${ll}&profile=${PLAN_PROFILES[planProfile]}&alternativeidx=0&format=geojson`;
+  const res=await fetch(url);
+  if(!res.ok) throw new Error('routing '+res.status);
+  const gj=await res.json();
+  const f=gj.features&&gj.features[0];
+  if(!f) throw new Error('no route');
+  const coords=f.geometry.coordinates.map(c=>[c[1],c[0],(c[2]!=null?+c[2]:null)]); // lat,lng,ele
+  const p=f.properties||{};
+  return { coords, dist:+(p['track-length']||0), ascent:Math.round(+(p['filtered ascend']||p['total-ascend']||0)) };
+}
+function straightLeg(a,b){ return {coords:[[a.lat,a.lng,null],[b.lat,b.lng,null]], dist:map.distance(a,b), ascent:0}; }
+
+function setPlanBusy(v){
+  planBusy=v;
+  document.getElementById('ppHint').textContent = v
+    ? TR('Finding the best way…','Buscando el mejor camino…')
+    : TR('Tap the map to drop points. Roads and paths are followed automatically. Drag a point to nudge it.',
+         'Toca el mapa para añadir puntos. Se siguen carreteras y caminos. Arrastra un punto para ajustarlo.');
+}
+
+async function planAddPoint(latlng){
+  if(planBusy) return;
+  const wp={lat:latlng.lat, lng:latlng.lng};
+  const idx=planWpts.length;
+  planWpts.push(wp);
+  const m=L.marker(wp,{icon:planWpIcon(idx),draggable:true,zIndexOffset:2000}).addTo(planWpLayer);
+  planMarkers.push(m);
+  m.on('dragend',()=>{ const i=planMarkers.indexOf(m); const ll=m.getLatLng(); planWpts[i]={lat:ll.lat,lng:ll.lng}; rerouteAround(i); });
+  if(planWpts.length>=2){
+    setPlanBusy(true);
+    let leg; try{ leg=await brouterLeg(planWpts[idx-1],wp); }
+    catch(e){ leg=straightLeg(planWpts[idx-1],wp); showNote(TR('Couldn’t snap to roads there — used a straight line.','No se pudo ajustar — línea recta.')); }
+    planLegs.push(leg);
+    setPlanBusy(false);
+  }
+  redrawPlan(); updatePlanStats();
+}
+
+async function rerouteAround(i){
+  if(planWpts.length<2) { redrawPlan(); updatePlanStats(); return; }
+  setPlanBusy(true);
+  try{
+    if(i>0){ try{ planLegs[i-1]=await brouterLeg(planWpts[i-1],planWpts[i]); }catch(e){ planLegs[i-1]=straightLeg(planWpts[i-1],planWpts[i]); } }
+    if(i<planWpts.length-1){ try{ planLegs[i]=await brouterLeg(planWpts[i],planWpts[i+1]); }catch(e){ planLegs[i]=straightLeg(planWpts[i],planWpts[i+1]); } }
+  } finally { setPlanBusy(false); }
+  redrawPlan(); updatePlanStats();
+}
+
+function planUndo(){
+  if(!planWpts.length||planBusy) return;
+  planWpts.pop();
+  const m=planMarkers.pop(); if(m) planWpLayer.removeLayer(m);
+  planLegs.pop();
+  redrawPlan(); updatePlanStats();
+}
+function planClear(){
+  if(planBusy) return;
+  planWpts=[]; planLegs=[];
+  planMarkers.forEach(m=>planWpLayer.removeLayer(m)); planMarkers=[];
+  redrawPlan(); updatePlanStats();
+}
+
+function planCoords(){ // full ordered [lat,lng,ele] across all legs, de-duplicating join points
+  const out=[];
+  planLegs.forEach((leg,li)=>{ leg.coords.forEach((c,ci)=>{ if(li>0&&ci===0) return; out.push(c); }); });
+  return out;
+}
+function redrawPlan(){
+  if(!planLayer) return;
+  planLayer.clearLayers();
+  const cs=planCoords().map(c=>[c[0],c[1]]);
+  if(cs.length>1){
+    L.polyline(cs,{color:'#fff',weight:8,opacity:.9,lineCap:'round',lineJoin:'round'}).addTo(planLayer);
+    L.polyline(cs,{color:'#F97316',weight:4.5,opacity:1,lineCap:'round',lineJoin:'round'}).addTo(planLayer);
+  }
+}
+
+function updatePlanStats(){
+  const dist=planLegs.reduce((s,l)=>s+l.dist,0);
+  const asc=planLegs.reduce((s,l)=>s+l.ascent,0);
+  const km=dist/1000;
+  document.getElementById('ppDist').textContent = km<10 ? km.toFixed(1) : Math.round(km);
+  document.getElementById('ppDistU').textContent='km';
+  document.getElementById('ppAsc').textContent=Math.round(asc);
+  document.getElementById('ppPts').textContent=planWpts.length;
+  const has = planLegs.length>0;
+  ['ppUndo','ppClear','ppGpx','ppShare','ppSubmit'].forEach(id=>document.getElementById(id).disabled = !( id==='ppUndo'||id==='ppClear' ? planWpts.length>0 : has));
+  drawPlanProfile();
+}
+
+function drawPlanProfile(){
+  const svg=document.querySelector('#ppProf svg'); if(!svg) return;
+  const cs=planCoords().filter(c=>c[2]!=null);
+  if(cs.length<2){ svg.innerHTML=''; return; }
+  // cumulative distance vs ele
+  let d=0; const xs=[0]; for(let i=1;i<cs.length;i++){ d+=map.distance([cs[i-1][0],cs[i-1][1]],[cs[i][0],cs[i][1]]); xs.push(d); }
+  const eles=cs.map(c=>c[2]); const mn=Math.min(...eles), mx=Math.max(...eles); const rng=(mx-mn)||1;
+  const W=280,H=46,pad=3;
+  const pts=cs.map((c,i)=>{ const x=(xs[i]/d)*W; const y=H-pad-((c[2]-mn)/rng)*(H-pad*2); return x.toFixed(1)+','+y.toFixed(1); });
+  const area=`0,${H} `+pts.join(' ')+` ${W},${H}`;
+  svg.innerHTML=`<polygon points="${area}" fill="rgba(249,115,22,.15)"/><polyline points="${pts.join(' ')}" fill="none" stroke="#F97316" stroke-width="1.6"/>`;
+}
+
+function planGPX(){
+  const cs=planCoords(); if(cs.length<2) return;
+  const name=(document.getElementById('rpName').value.trim())||'VÉLO planned route';
+  const seg=cs.map(c=>`      <trkpt lat="${c[0].toFixed(6)}" lon="${c[1].toFixed(6)}">${c[2]!=null?`<ele>${c[2].toFixed(1)}</ele>`:''}</trkpt>`).join('\n');
+  const gpx=`<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="VÉLO Mar Menor" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata><name>${name}</name></metadata>
+  <trk><name>${name}</name><type>${planProfile}</type><trkseg>
+${seg}
+  </trkseg></trk>
+</gpx>`;
+  const blob=new Blob([gpx],{type:'application/gpx+xml'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='velo-planned-route.gpx';a.click();URL.revokeObjectURL(a.href);
+}
+
+function thinPts(cs,max){ // downsample to <=max, keep endpoints
+  if(cs.length<=max) return cs.map(c=>[+c[0].toFixed(5),+c[1].toFixed(5)]);
+  const step=Math.ceil(cs.length/max), out=[];
+  for(let i=0;i<cs.length;i+=step) out.push([+cs[i][0].toFixed(5),+cs[i][1].toFixed(5)]);
+  const last=cs[cs.length-1]; out.push([+last[0].toFixed(5),+last[1].toFixed(5)]);
+  return out;
+}
+
+/* Planner UI wiring */
+document.getElementById('planBtn').onclick=()=>togglePlan();
+document.getElementById('ppClose').onclick=()=>togglePlan(false);
+document.getElementById('ppUndo').onclick=planUndo;
+document.getElementById('ppClear').onclick=planClear;
+document.getElementById('ppGpx').onclick=planGPX;
+document.getElementById('ppShare').onclick=planGPX;
+document.querySelectorAll('#ppSurface button').forEach(b=>b.onclick=async()=>{
+  if(planBusy) return;
+  document.querySelectorAll('#ppSurface button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); planProfile=b.dataset.prof;
+  // re-route every leg with the new profile
+  if(planWpts.length>=2){
+    setPlanBusy(true);
+    for(let i=0;i<planWpts.length-1;i++){ try{ planLegs[i]=await brouterLeg(planWpts[i],planWpts[i+1]); }catch(e){ planLegs[i]=straightLeg(planWpts[i],planWpts[i+1]); } }
+    setPlanBusy(false); redrawPlan(); updatePlanStats();
+  }
+});
+map.on('click',e=>{ if(planActive) planAddPoint(e.latlng); });
+
+/* Submit-route modal */
+function openRouteSubmit(){
+  if(planLegs.length<1) return;
+  document.getElementById('rpMsg').className='sg-msg';
+  document.getElementById('rpScrim').classList.add('open');
+}
+function closeRouteSubmit(){ document.getElementById('rpScrim').classList.remove('open'); }
+document.getElementById('ppSubmit').onclick=openRouteSubmit;
+document.getElementById('rpClose').onclick=closeRouteSubmit;
+document.getElementById('rpCancel').onclick=closeRouteSubmit;
+document.getElementById('rpScrim').addEventListener('click',e=>{ if(e.target.id==='rpScrim') closeRouteSubmit(); });
+
+async function submitRoute(){
+  const msg=document.getElementById('rpMsg'); msg.className='sg-msg';
+  const name=document.getElementById('rpName').value.trim();
+  if(!name){ msg.className='sg-msg err'; msg.textContent=TR('Please name your route.','Ponle nombre a tu ruta.'); return; }
+  const cs=planCoords();
+  if(cs.length<2){ msg.className='sg-msg err'; msg.textContent=TR('Plan at least two points first.','Añade al menos dos puntos.'); return; }
+  if(!SB){ msg.className='sg-msg err'; msg.textContent=TR('Submitting needs the online version — open the site link.','Enviar necesita la versión online.'); return; }
+  const btn=document.getElementById('rpSubmit'); btn.disabled=true; btn.textContent=TR('Sending…','Enviando…');
+  const dist=planLegs.reduce((s,l)=>s+l.dist,0), asc=planLegs.reduce((s,l)=>s+l.ascent,0);
+  const row={ name, type:planProfile,
+    dist:+(dist/1000).toFixed(2), ascent:Math.round(asc),
+    pts:thinPts(cs,3000),
+    note:document.getElementById('rpNote').value.trim()||null,
+    submitter_name:document.getElementById('rpWho').value.trim()||null,
+    submitter_contact:document.getElementById('rpContact').value.trim()||null };
+  let error=null;
+  try{ const r=await SB.from('route_suggestions').insert(row); error=r.error; }catch(e){ error=e; }
+  btn.disabled=false; btn.textContent=TR('Send route','Enviar ruta');
+  if(error){ msg.className='sg-msg err'; msg.textContent=TR('Sorry, could not send: ','No se pudo enviar: ')+(error.message||error); return; }
+  msg.className='sg-msg ok'; msg.textContent=TR('Thank you! Your route has been sent for review. 🚴','¡Gracias! Tu ruta se ha enviado para revisión. 🚴');
+  setTimeout(()=>{ closeRouteSubmit(); planClear(); document.getElementById('rpName').value=''; document.getElementById('rpNote').value=''; },1900);
+}
+document.getElementById('rpSubmit').onclick=submitRoute;
 
 /* =========================================================================
    DEEP LINKS  (#route=<id>)

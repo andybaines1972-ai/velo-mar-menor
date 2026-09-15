@@ -65,6 +65,10 @@ pre{background:var(--ink);color:#e2e8f0;border-radius:var(--r);padding:12px;font
 </div>
 
 <div id="queueView" class="wrap" hidden>
+  <div class="tabs" style="margin-bottom:20px">
+    <div class="tab on modetab" data-mode="places">📍 Places</div>
+    <div class="tab modetab" data-mode="routes">🚴 Routes</div>
+  </div>
   <div class="tabs">
     <div class="tab on" data-status="pending">Pending</div>
     <div class="tab" data-status="approved">Approved</div>
@@ -75,7 +79,7 @@ pre{background:var(--ink);color:#e2e8f0;border-radius:var(--r);padding:12px;font
 
 <script>
 const CATS={coffee:'Coffee stop',food:'Food & drink',hire:'Bike hire / shop',stay:'Accommodation',view:'Landmark'};
-let SB=null, curStatus='pending';
+let SB=null, curStatus='pending', curMode='places';
 try{ SB=window.supabase.createClient(VELO_SUPABASE.url, VELO_SUPABASE.key); }catch(e){}
 const $=id=>document.getElementById(id);
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -91,19 +95,24 @@ $('loginBtn').onclick=async()=>{
   showQueue();
 };
 $('signout').onclick=async()=>{ await SB.auth.signOut(); location.reload(); };
-document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
-  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on')); t.classList.add('on');
+document.querySelectorAll('.tab[data-status]').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab[data-status]').forEach(x=>x.classList.remove('on')); t.classList.add('on');
   curStatus=t.dataset.status; load();
+});
+document.querySelectorAll('.modetab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.modetab').forEach(x=>x.classList.remove('on')); t.classList.add('on');
+  curMode=t.dataset.mode; load();
 });
 function showQueue(){ $('loginView').hidden=true; $('queueView').hidden=false; $('signout').hidden=false; load(); }
 
 async function load(){
   const list=$('list'); list.innerHTML='<div class="empty">Loading…</div>';
-  const {data,error}=await SB.from('place_suggestions').select('*').eq('status',curStatus).order('created_at',{ascending:false});
+  const table=curMode==='routes'?'route_suggestions':'place_suggestions';
+  const {data,error}=await SB.from(table).select('*').eq('status',curStatus).order('created_at',{ascending:false});
   if(error){ list.innerHTML='<div class="empty">'+esc(error.message)+'</div>'; return; }
   if(!data.length){ list.innerHTML='<div class="empty">Nothing '+curStatus+'.</div>'; return; }
   list.innerHTML='';
-  data.forEach(s=>list.appendChild(card(s)));
+  data.forEach(s=>list.appendChild(curMode==='routes'?routeCard(s):card(s)));
 }
 function card(s){
   const d=document.createElement('div'); d.className='card sug';
@@ -131,6 +140,90 @@ function card(s){
     <pre></pre>`;
   d.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>act(s,b.dataset.act,d));
   return d;
+}
+const TYPE_LABEL={road:'Road',gravel:'Gravel',path:'Path'};
+function routeShapeSvg(pts){
+  if(!pts||pts.length<2) return '';
+  const lats=pts.map(p=>p[0]), lngs=pts.map(p=>p[1]);
+  const mnLa=Math.min(...lats),mxLa=Math.max(...lats),mnLo=Math.min(...lngs),mxLo=Math.max(...lngs);
+  const W=560,H=170,pad=12;
+  const sx=(mxLo-mnLo)||1e-6, sy=(mxLa-mnLa)||1e-6;
+  const sc=Math.min((W-2*pad)/sx,(H-2*pad)/sy);
+  const w=sx*sc, h=sy*sc, ox=(W-w)/2, oy=(H-h)/2;
+  const d=pts.map((p,i)=>{const x=ox+(p[1]-mnLo)*sc; const y=oy+(mxLa-p[0])*sc; return (i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1);}).join(' ');
+  const s=pts[0],e=pts[pts.length-1];
+  const sX=ox+(s[1]-mnLo)*sc,sY=oy+(mxLa-s[0])*sc,eX=ox+(e[1]-mnLo)*sc,eY=oy+(mxLa-e[0])*sc;
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;background:var(--g100);border-radius:10px;margin-top:10px">
+    <path d="${d}" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="${d}" fill="none" stroke="#F97316" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${sX.toFixed(1)}" cy="${sY.toFixed(1)}" r="5" fill="#059669" stroke="#fff" stroke-width="2"/>
+    <circle cx="${eX.toFixed(1)}" cy="${eY.toFixed(1)}" r="5" fill="#DC2626" stroke="#fff" stroke-width="2"/>
+  </svg>`;
+}
+function routeCard(s){
+  const d=document.createElement('div'); d.className='card sug';
+  const when=new Date(s.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  const pts=Array.isArray(s.pts)?s.pts:[];
+  const start=pts.length?pts[0]:null;
+  const badgeCls=s.type==='gravel'?'b-food':(s.type==='path'?'b-hire':'b-view');
+  d.innerHTML=`
+    <span class="badge ${badgeCls}">${TYPE_LABEL[s.type]||s.type}</span>
+    <h3>${esc(s.name)}</h3>
+    ${routeShapeSvg(pts)}
+    <div class="meta">
+      <span><b>${s.dist!=null?(+s.dist).toFixed(1):'?'}</b> km</span>
+      <span>↑ <b>${s.ascent!=null?Math.round(s.ascent):'?'}</b> m</span>
+      <span>${pts.length} pts</span>
+      ${start?`<span>📍 <a href="https://www.google.com/maps?q=${start[0]},${start[1]}" target="_blank" rel="noopener">start</a></span>`:''}
+      ${s.submitter_name?`<span>✍ ${esc(s.submitter_name)}${s.submitter_contact?' ('+esc(s.submitter_contact)+')':''}</span>`:''}
+      <span>${when}</span>
+    </div>
+    ${s.note?`<div class="desc">${esc(s.note)}</div>`:''}
+    <div class="acts">
+      ${curStatus!=='approved'?'<button class="btn sm green" data-act="approved">✓ Approve</button>':''}
+      ${curStatus!=='rejected'?'<button class="btn sm red" data-act="rejected">✕ Reject</button>':''}
+      ${curStatus!=='pending'?'<button class="btn sm ghost" data-act="pending">↩ Back to pending</button>':''}
+      <button class="btn sm ghost" data-act="gpx">⭳ GPX</button>
+      <button class="btn sm ghost" data-act="code">⧉ Copy curated.json entry</button>
+      <button class="btn sm ghost" data-act="del">🗑 Delete</button>
+    </div>
+    <pre></pre>`;
+  d.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>routeAct(s,b.dataset.act,d));
+  return d;
+}
+function slugify(str){ return (str||'route').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,32); }
+function curatedCode(s){
+  const pts=Array.isArray(s.pts)?s.pts:[];
+  const dist=s.dist!=null?Math.round(+s.dist):0;
+  const time=dist>=70?'day':(dist>=35?'3':'2');
+  const surf=s.type==='gravel'?'Gravel and unpaved tracks':(s.type==='path'?'Traffic-free paths and promenade':'Quiet roads and lanes');
+  const color=s.type==='gravel'?'#D97706':(s.type==='path'?'#8B5CF6':'#3B82F6');
+  const o={ id:slugify(s.name), name:s.name, type:s.type||'road', time, dist,
+    ascent:s.ascent!=null?Math.round(s.ascent):0, diff:'Moderate',
+    surfaceTxt:surf, summary:s.note||'Community-submitted route.', desc:'',
+    color, stops:[], source:'Community submission', pts };
+  // pretty print but keep pts on one line
+  const ptsStr=JSON.stringify(o.pts);
+  const head=JSON.stringify({...o,pts:'__PTS__'},null,2).replace('"__PTS__"',ptsStr);
+  return head+',';
+}
+async function routeAct(s,a,el){
+  if(a==='code'){ const p=el.querySelector('pre'); p.textContent=curatedCode(s); p.style.display='block';
+    try{navigator.clipboard.writeText(curatedCode(s));}catch(e){} return; }
+  if(a==='gpx'){ downloadRouteGpx(s); return; }
+  if(a==='del'){ if(!confirm('Delete this route permanently?'))return;
+    const {error}=await SB.from('route_suggestions').delete().eq('id',s.id);
+    if(error){alert(error.message);return;} el.remove(); return; }
+  const {error}=await SB.from('route_suggestions').update({status:a}).eq('id',s.id);
+  if(error){ alert(error.message); return; }
+  el.style.opacity=.4; setTimeout(load,250);
+}
+function downloadRouteGpx(s){
+  const pts=Array.isArray(s.pts)?s.pts:[]; if(pts.length<2) return;
+  const seg=pts.map(p=>`      <trkpt lat="${p[0]}" lon="${p[1]}"></trkpt>`).join('\n');
+  const gpx=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="VÉLO Mar Menor" xmlns="http://www.topografix.com/GPX/1/1">\n  <metadata><name>${esc(s.name)}</name></metadata>\n  <trk><name>${esc(s.name)}</name><type>${s.type}</type><trkseg>\n${seg}\n  </trkseg></trk>\n</gpx>`;
+  const blob=new Blob([gpx],{type:'application/gpx+xml'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=slugify(s.name)+'.gpx';a.click();URL.revokeObjectURL(a.href);
 }
 function poiCode(s){
   const id=(s.name||'place').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,28);
