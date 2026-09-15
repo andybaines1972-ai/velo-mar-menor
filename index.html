@@ -330,6 +330,20 @@ img{display:block;max-width:100%}
 .section-header h2{margin-bottom:0}
 .link-btn{font-size:13px;font-weight:600;color:var(--accent);cursor:pointer;transition:color .15s}
 .link-btn:hover{color:var(--accent-hover)}
+.plan-cta{display:flex;align-items:center;gap:22px;background:linear-gradient(120deg,#0F172A 0%,#1E293B 55%,#B4460F 130%);
+  color:#fff;border-radius:var(--r-xl);padding:26px 28px;overflow:hidden;position:relative}
+.plan-cta .pc-ic{flex:none;width:56px;height:56px;border-radius:14px;background:var(--accent);display:grid;place-items:center;box-shadow:0 6px 18px rgba(249,115,22,.45)}
+.plan-cta .pc-ic svg{width:30px;height:30px;stroke:#fff}
+.plan-cta .pc-txt{flex:1;min-width:0}
+.plan-cta .pc-txt .pc-eye{font-size:10.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:5px}
+.plan-cta .pc-txt h2{font-family:var(--font-d);text-transform:uppercase;letter-spacing:.02em;font-size:25px;line-height:1.05;margin-bottom:6px}
+.plan-cta .pc-txt p{font-size:13.5px;line-height:1.55;color:rgba(255,255,255,.8);max-width:560px}
+.plan-cta .pc-go{flex:none;background:var(--accent);color:#fff;padding:13px 26px;border-radius:var(--r);font-size:15px;font-weight:700;
+  box-shadow:0 4px 14px rgba(249,115,22,.4);transition:all .2s;white-space:nowrap;display:inline-flex;align-items:center;gap:8px}
+.plan-cta .pc-go:hover{background:var(--accent-hover);transform:translateY(-2px)}
+.plan-cta .pc-go svg{width:17px;height:17px;stroke:#fff}
+@media(max-width:700px){.plan-cta{flex-direction:column;align-items:flex-start;text-align:left;gap:16px;padding:22px}
+  .plan-cta .pc-go{width:100%;justify-content:center}}
 .featured-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .feat-card{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--r-lg);
   overflow:hidden;cursor:pointer;transition:all .2s}
@@ -822,6 +836,7 @@ img{display:block;max-width:100%}
           <p class="hero-desc">Hand-picked road & gravel routes, local cafes, bike hire and your complete ride history &mdash; all in one place.</p>
           <div class="hero-cta">
             <button class="btn-hero" id="wExplore">Explore routes</button>
+            <button class="btn-hero-outline" id="wPlanHero">Plan your own route</button>
             <button class="btn-hero-outline" id="wMap">Open the map</button>
           </div>
         </div>
@@ -838,6 +853,20 @@ img{display:block;max-width:100%}
             <div class="hl"><span class="hl-icon" style="background:rgba(249,115,22,.1);color:var(--accent)">300+</span><div><b>Days of sunshine</b><p>One of Europe's sunniest coasts — rideable year-round</p></div></div>
             <div class="hl"><span class="hl-icon" style="background:rgba(59,130,246,.1);color:var(--road)">0–1,900m</span><div><b>Flat to alpine</b><p>Sea-level lagoon paths to serious Sierra climbs — all within 30 km</p></div></div>
             <div class="hl"><span class="hl-icon" style="background:rgba(5,150,105,.1);color:var(--path)">73 km</span><div><b>Traffic-free greenways</b><p>Via Verde del Campo de Cartagena + coastal promenades</p></div></div>
+          </div>
+        </div>
+
+        <div class="landing-section">
+          <div class="plan-cta">
+            <div class="pc-ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="5" r="2.4"/><path d="M8.2 17.8l2-3M12.4 11.6l1.5-2.2M15.6 7.4l.2-.3"/></svg>
+            </div>
+            <div class="pc-txt">
+              <div class="pc-eye" id="pcEye">Plan · point-to-point</div>
+              <h2 id="pcTitle">Create your own route</h2>
+              <p id="pcDesc">Drop a start and a finish for a quick point-to-point, or tap along the way to add waypoints — the line snaps to real roads and paths as you go. See live distance and climb, then download the GPX or send it to us.</p>
+            </div>
+            <button class="pc-go" id="wPlanCta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span id="pcGoTxt">Start planning</span></button>
           </div>
         </div>
 
@@ -1673,7 +1702,12 @@ const I18N_STATIC = [
  ['.hero-title','Discover cycling around the Mar Menor','Descubre el ciclismo en el Mar Menor'],
  ['.hero-desc','Hand-picked road & gravel routes, local cafes, bike hire and your complete ride history — all in one place.','Rutas de carretera y gravel seleccionadas, cafeterías locales, alquiler de bicis y todo tu historial de salidas — en un solo lugar.'],
  ['#wExplore','Explore routes','Explora las rutas'],
+ ['#wPlanHero','Plan your own route','Planifica tu ruta'],
  ['#wMap','Open the map','Abrir el mapa'],
+ ['#pcEye','Plan · point-to-point','Planifica · punto a punto'],
+ ['#pcTitle','Create your own route','Crea tu propia ruta'],
+ ['#pcDesc','Drop a start and a finish for a quick point-to-point, or tap along the way to add waypoints — the line snaps to real roads and paths as you go. See live distance and climb, then download the GPX or send it to us.','Marca un inicio y un final para un punto a punto rápido, o toca por el camino para añadir puntos intermedios: la línea se ajusta a carreteras y caminos reales. Verás la distancia y el desnivel en directo, y podrás descargar el GPX o enviárnoslo.'],
+ ['#pcGoTxt','Start planning','Empezar a planificar'],
  ['.highlights .hl:nth-child(1) b','Days of sunshine','Días de sol'],
  ['.highlights .hl:nth-child(1) p','One of Europe’s sunniest coasts — rideable year-round','Una de las costas más soleadas de Europa — se rueda todo el año'],
  ['.highlights .hl:nth-child(2) b','Flat to alpine','Del llano a la montaña'],
@@ -2587,6 +2621,9 @@ document.getElementById('wPlaces').onclick=()=>navigateTo('places');
 document.getElementById('wCommunity').onclick=()=>navigateTo('community');
 document.getElementById('wWindAll').onclick=()=>navigateTo('routes');
 document.getElementById('wMap2').onclick=()=>navigateTo('map');
+function startPlanner(){ navigateTo('map'); setTimeout(()=>{ try{map.invalidateSize();}catch(e){} togglePlan(true); },80); }
+document.getElementById('wPlanHero').onclick=startPlanner;
+document.getElementById('wPlanCta').onclick=startPlanner;
 
 document.getElementById('resetBtn').onclick=()=>{
   map.setView([37.74,-0.82],11);
