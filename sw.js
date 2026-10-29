@@ -1,12 +1,12 @@
 /* VÉLO Mar Menor — offline service worker
    Caches the app shell, your route data (manifest + FIT files), the map/FIT
    libraries, and map tiles you've viewed, so the hub works offline. */
-const SHELL = 'velo-shell-v26';
+const SHELL = 'velo-shell-v27';
 const TILES = 'velo-tiles-v2';
-const RUNTIME = 'velo-rt-v26';
+const RUNTIME = 'velo-rt-v27';
 
 const SHELL_URLS = [
-  './', 'index.html', 'manifest.webmanifest',
+  './', 'index.html', 'coach.html', 'assets/coach-engine.js', 'manifest.webmanifest',
   'assets/vendor/leaflet.css',
   'assets/vendor/leaflet.js', 'assets/vendor/supabase.js', 'assets/velo-config.js',
   'https://cdn.jsdelivr.net/npm/@garmin/fitsdk/+esm',
@@ -44,19 +44,36 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // Live weather + Supabase (suggestions/auth): always network, never cache.
+  // Live weather + Supabase (suggestions/auth) + the coach's intervals.icu bridge: always network, never cache.
   if (url.hostname === 'api.open-meteo.com' || url.hostname.endsWith('supabase.co')) return;
+  if (url.origin === self.location.origin && url.pathname.startsWith('/api/')) return;
 
-  // App navigations: network-first (fresh updates), fall back to cached shell offline.
+  // App navigations: network-first (fresh updates), fall back to the cached page offline.
+  // Each page is cached under its own key so the coach page never replaces the hub (and vice versa).
   if (req.mode === 'navigate') {
+    const isCoach = /\/coach(\.html)?$/.test(url.pathname);
+    const isHub = url.pathname === '/' || /\/index\.html$/.test(url.pathname);
     e.respondWith((async () => {
       try {
         const res = await fetch(req);
-        const c = await caches.open(SHELL); c.put('index.html', res.clone());
+        if (res.ok && (isCoach || isHub)) { const c = await caches.open(SHELL); c.put(isCoach ? 'coach.html' : 'index.html', res.clone()); }
         return res;
       } catch (_) {
+        if (isCoach) { const hit = await caches.match('coach.html'); if (hit) return hit; }
         return (await caches.match('index.html')) || (await caches.match('./'));
       }
+    })());
+    return;
+  }
+
+  // Coach engine: network-first so plan logic updates straight away, cached copy offline.
+  if (url.origin === self.location.origin && /\/assets\/coach-/.test(url.pathname)) {
+    e.respondWith((async () => {
+      try {
+        const res = await fetch(req);
+        const c = await caches.open(SHELL); c.put(req, res.clone());
+        return res;
+      } catch (_) { return (await caches.match(req)) || new Response('', { status: 504 }); }
     })());
     return;
   }
