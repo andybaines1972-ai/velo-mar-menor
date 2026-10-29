@@ -560,7 +560,8 @@ ${rows.join('\n')}
         type: a.type || (strava ? 'Ride?' : ''), strava: !!strava,
         load: +a.icu_training_load || 0, seconds: +a.moving_time || 0,
         np: +a.icu_weighted_avg_watts || 0, intensity: a.icu_intensity ? +a.icu_intensity / 100 : 0,
-        hr: +a.average_heartrate || 0, rpe: +(a.icu_rpe || a.perceived_exertion || 0) || 0, distance: +a.distance || 0
+        hr: +a.average_heartrate || 0, rpe: +(a.icu_rpe || a.perceived_exertion || 0) || 0, distance: +a.distance || 0,
+        device: a.device_name || '', garmin: /garmin/i.test(a.device_name || '')
       };
     }).filter(a => a.date);
   }

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-GB">
 <head>
+<!-- Some interface icons are taken from or adapted from Feather (https://feathericons.com), MIT License, Copyright (c) 2013-2023 Cole Bemis. Full notices: assets/THIRD-PARTY-NOTICES.txt -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <meta name="theme-color" content="#0F172A">
@@ -234,6 +235,9 @@ th{font-size:12px;color:var(--gray-500);font-weight:600}
 .rides th:nth-child(2),.rides td.nm{text-align:left}
 .rides td.nm{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rides tr.hidden td{color:var(--gray-400)}
+.rides td.nm .rn{display:block;overflow:hidden;text-overflow:ellipsis}
+.rides td.nm .dev{display:block;white-space:normal;font-size:11.5px;color:var(--gray-500)}
+.attr{font-size:12px;color:var(--gray-600);margin:-4px 0 10px}
 
 /* setup */
 .form{display:grid;gap:16px}
@@ -365,6 +369,10 @@ const dLong = s => `${DOWL[E.dow(s)]} ${dShort(s)}`;
 const fmtDur = sec => E.fmtMin(Math.round(sec / 60));
 const signed = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(Math.round(v));
 const watts = (pct, ftp) => ftp ? Math.round(pct / 100 * ftp) : null;
+// Garmin attribution (required by the intervals.icu API terms and Garmin's API brand guidelines)
+const garminName = a => { if (!a || !a.garmin) return ''; const rest = String(a.device || '').replace(/garmin/ig, '').trim(); return rest ? 'Garmin ' + rest : 'Garmin'; };
+const hasGarmin = acts => (acts || []).some(a => a && a.garmin);
+const GARMIN_NOTE = 'Derived in part from Garmin device-sourced data';
 
 function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 3200); }
 
@@ -743,10 +751,10 @@ function workoutDetail(w, date){
 function metaLine(w){
   const ftp = D && D.ftp;
   const np = ftp ? Math.round(w.if * ftp) : null;
-  return `${fmtDur(w.seconds)} · load ${w.tss}${np ? ` · ~${np} W NP` : ''}`;
+  return `${fmtDur(w.seconds)} · load ${w.tss}${np ? ` · ~${np} W weighted` : ''}`;
 }
 function doneSummary(acts){
-  return acts.map(a => a.strava ? 'Activity (via Strava — details hidden)' : `${esc(a.name)} · ${fmtDur(a.seconds)} · load ${Math.round(a.load)}`).join('<br>');
+  return acts.map(a => a.strava ? 'Activity (via Strava — details hidden)' : `${esc(a.name)} · ${fmtDur(a.seconds)} · load ${Math.round(a.load)}${a.garmin ? ' · ' + esc(garminName(a)) : ''}`).join('<br>');
 }
 function statusIcon(z){
   const map = { critical: ['var(--critical)', '!'], good: ['var(--good)', '✓'], neutral: ['var(--gray-400)', '–'], info: ['var(--s-fit)', '↑'], warning: ['var(--warn)', '↓'] };
@@ -779,7 +787,7 @@ function renderToday(){
     const w = d.workout;
     heroName = w.name;
     const ftp = D && D.ftp;
-    heroMeta = `<div class="hero-meta"><div><b class="num">${fmtDur(w.seconds)}</b><span>Time</span></div><div><b class="num">${w.tss}</b><span>Load</span></div><div><b class="num">${w.if.toFixed(2)}</b><span>Intensity</span></div>${ftp ? `<div><b class="num">${Math.round(w.if * ftp)} W</b><span>Norm. power</span></div>` : ''}</div>`;
+    heroMeta = `<div class="hero-meta"><div><b class="num">${fmtDur(w.seconds)}</b><span>Time</span></div><div><b class="num">${w.tss}</b><span>Load</span></div><div><b class="num">${w.if.toFixed(2)}</b><span>Intensity</span></div>${ftp ? `<div><b class="num">${Math.round(w.if * ftp)} W</b><span>Weighted power</span></div>` : ''}</div>`;
     body = (done.length ? `<div class="note info"><b>Done ✓</b><br>${doneSummary(done)}</div>` : '') + workoutDetail(w, t);
   } else if (d.gym) { heroName = 'Gym day'; body = `<p class="why">No bike today. Your gym session counts towards fatigue if it’s recorded in intervals.icu.</p>${done.length ? `<div class="note info"><b>You rode as well ✓</b><br>${doneSummary(done)}</div>` : ''}`; }
   else if (d.slot === 'pre') { heroName = 'Plan starts tomorrow'; body = `<p class="why">Your plan picks up from tomorrow. An easy spin today is fine if you fancy it.</p>`; }
@@ -798,6 +806,7 @@ function renderToday(){
     <div class="stack">
       <div class="card">
         <h2>Readiness</h2>
+        ${hasGarmin(P.activities) ? `<div class="attr">${GARMIN_NOTE}</div>` : ''}
         <div class="row" style="justify-content:space-between;align-items:flex-end">
           <div><div class="eyebrow" style="margin-bottom:4px">Form</div><div class="form-big"><b class="num">${signed(r.tsb)}</b>${statusIcon(r.zone)}</div></div>
         </div>
@@ -848,6 +857,7 @@ function renderPlan(){
     const limited = w.targetTss && w.plannedTss < w.targetTss * 0.9 && w.budgetMin && w.plannedMin >= w.budgetMin * 0.85;
     return `<div class="card">
       <div class="week-head"><h3>${title}</h3><span class="muted small">${dShort(w.start)} – ${dShort(E.addDays(w.start, 6))}</span><span class="spacer"></span><span class="chip">${esc(w.label || '')}</span></div>
+      ${hasGarmin(w.days.flatMap(d => d.done || [])) ? `<div class="attr">Completed rides include Garmin device-sourced data</div>` : ''}
       ${w.phase === 'pending' || w.phase === 'done' ? '' : `<div class="small muted num">Planned ${E.fmtMin(w.plannedMin)} · load ${w.plannedTss} of ${w.targetTss} target${w.doneTss ? ` · done so far ${w.doneTss}` : ''}</div>
       <div class="meter" role="img" aria-label="Planned load ${w.plannedTss} of ${w.targetTss}"><i style="width:${pct}%"></i></div>
       ${limited ? `<div class="xs muted">Your weekly hours cap the load here. That’s fine: fitness just builds a bit slower.</div>` : ''}`}
@@ -916,13 +926,14 @@ function renderFitness(){
   }
   v.innerHTML = `
     <div class="filters" role="group" aria-label="Date range"><div class="seg">${Object.keys(RANGES).map(k => `<button data-range="${k}" aria-pressed="${UI.range === k}">${{ '6w': '6 weeks', '3m': '3 months', '6m': '6 months', '1y': '1 year' }[k]}</button>`).join('')}</div></div>
+    ${hasGarmin(P.activities) ? `<div class="attr" style="margin:0 0 10px">${GARMIN_NOTE}</div>` : ''}
     <div class="tiles">
       <div class="tile"><div class="k"><i class="lk" style="border-color:var(--s-fit)"></i>Fitness</div><div class="v num">${Math.round(r.ctl)}</div><div class="d ${r.ramp > 0 ? 'up' : ''}">${r.ramp == null ? '' : `${signed(r.ramp)} in 7 days`}</div></div>
       <div class="tile"><div class="k"><i class="lk" style="border-color:var(--s-fat)"></i>Fatigue</div><div class="v num">${Math.round(r.atl)}</div><div class="d">7-day load average</div></div>
       <div class="tile"><div class="k"><i class="lk" style="border-color:var(--ink-2)"></i>Form</div><div class="v num">${signed(r.tsb)}</div><div class="d">${statusIcon(r.zone)}</div></div>
       <div class="tile"><div class="k">FTP</div><div class="v num">${D && D.ftp ? D.ftp + ' W' : '–'}</div><div class="d">from intervals.icu</div></div>
     </div>
-    <div class="card"><div id="pmc" style="opacity:${syncing ? .55 : 1}"></div>
+    <div class="card">${hasGarmin(P.activities) ? `<div class="attr">Fitness, fatigue and form are derived in part from Garmin device-sourced data</div>` : ''}<div id="pmc" style="opacity:${syncing ? .55 : 1}"></div>
       <details class="tbl"><summary>Show as a table</summary>
         <table><thead><tr><th>Week ending</th><th>Fitness</th><th>Fatigue</th><th>Form</th><th>Load (7d)</th></tr></thead>
         <tbody>${weekly.map(w => `<tr><td>${esc(dShort(w.date))}${w.projected ? ' (plan)' : ''}</td><td>${Math.round(w.ctl)}</td><td>${Math.round(w.atl)}</td><td>${signed(w.tsb)}</td><td>${Math.round(w.load)}</td></tr>`).join('')}</tbody></table>
@@ -930,8 +941,8 @@ function renderFitness(){
       <p class="xs muted" style="margin-top:12px;line-height:1.5">Fitness is your 6-week training load average, fatigue is the last week’s. Form is fitness minus fatigue. The shaded bands scale with your fitness. The dashed section projects the plan two weeks ahead (bike sessions only).</p>
     </div>
     <div class="card" style="margin-top:16px"><h2>Recent rides</h2>
-      ${rides.length ? `<div style="overflow-x:auto"><table class="rides"><thead><tr><th>Date</th><th>Ride</th><th>Time</th><th>Load</th><th>NP</th><th>IF</th></tr></thead><tbody>
-      ${rides.map(a => `<tr class="${a.strava ? 'hidden' : ''}"><td>${esc(dShort(a.date))}</td><td class="nm">${esc(a.strava ? 'Via Strava (details hidden)' : a.name)}</td><td>${a.seconds ? fmtDur(a.seconds) : '–'}</td><td>${a.load ? Math.round(a.load) : '–'}</td><td>${a.np ? Math.round(a.np) + ' W' : '–'}</td><td>${a.intensity ? a.intensity.toFixed(2) : '–'}</td></tr>`).join('')}
+      ${rides.length ? `<div style="overflow-x:auto"><table class="rides"><thead><tr><th>Date</th><th>Ride</th><th>Time</th><th>Load</th><th>Wtd power</th><th>Intensity</th></tr></thead><tbody>
+      ${rides.map(a => `<tr class="${a.strava ? 'hidden' : ''}"><td>${esc(dShort(a.date))}</td><td class="nm"><span class="rn">${esc(a.strava ? 'Via Strava (details hidden)' : a.name)}</span>${a.garmin ? `<small class="dev">${esc(garminName(a))}</small>` : ''}</td><td>${a.seconds ? fmtDur(a.seconds) : '–'}</td><td>${a.load ? Math.round(a.load) : '–'}</td><td>${a.np ? Math.round(a.np) + ' W' : '–'}</td><td>${a.intensity ? a.intensity.toFixed(2) : '–'}</td></tr>`).join('')}
       </tbody></table></div>` : '<p class="small muted">No rides in the last four months yet. Time to get back on the bike.</p>'}
     </div>`;
   requestAnimationFrame(renderPmc);
@@ -999,6 +1010,7 @@ function renderSetup(){
     ${S.configured ? `<div class="card"><h2>Calendar</h2><p class="small muted" style="line-height:1.5">VÉLO only touches workouts it created. Anything else in your intervals.icu calendar is left alone.</p>
       <div class="row" style="margin-top:12px"><button class="btn btn-danger" data-act="unpush">Remove VÉLO workouts from intervals.icu</button></div></div>` : ''}
     <div class="card" id="acct">${accountCard()}</div>
+    <p class="xs muted" style="line-height:1.55;padding:0 4px">VÉLO Coach is an independent personal project. It isn’t affiliated with or endorsed by intervals.icu, Garmin, Wahoo, Zwift, Strava or TrainingPeaks. Their names are trademarks of their owners and are used here only to say what the app works with. Some icons come from Feather (MIT licence): <a href="assets/THIRD-PARTY-NOTICES.txt" target="_blank" rel="noopener">third-party licences</a>.</p>
   </div>`;
 }
 function accountCard(){
